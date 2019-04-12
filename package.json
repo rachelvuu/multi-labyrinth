@@ -1,0 +1,15 @@
+{
+  "name": "objective-labyrinth",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "main": "build/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "YOUR NAME HERE",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^8.10.45"
+  }
+}
