@@ -29,7 +29,7 @@ export class CommandParser {
    * The function should return whether or not the parser should prompt the user
    * for further input.
    */
-  constructor(handler: (cmd: Command, arg: string) => boolean) {
+  constructor(handler: (cmd: Command, arg: string) => boolean, private continuous = true) {
     this.handler = handler;
 
     this.io = readline.createInterface({ 
@@ -54,14 +54,14 @@ export class CommandParser {
         let arg = line.substr(firstSpace+1);
         let shouldProceed = this.handler(cmd, arg); //call handler function!
         if(shouldProceed){
-          this.io.prompt();
+          if(this.continuous) this.io.prompt(); //wait for user to call prompt again
         } else {
           this.io.close();
         }  
       } 
       else {
         console.log('Invalid command. Commands are:', commands.join(', '));
-        this.io.prompt();
+        this.io.prompt(); //repeats
       }
     })
   }
@@ -71,6 +71,13 @@ export class CommandParser {
    */
   public setHandler(handler:(cmd: Command, arg: string)=>boolean) {
     this.handler = handler;
+  }
+
+  /**
+   * Request new user input (for non-continuous parsing)
+   */
+  public prompt() {
+    this.io.prompt();
   }
 
   /**
