@@ -1,0 +1,150 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "type": "object",
+    "title": "The Root Schema",
+    "required": [
+      "Westeros"
+    ],
+    "properties": {
+      "Westeros": {
+        "$id": "#/properties/Westeros",
+        "type": "array",
+        "title": "The Westeros Schema",
+        "items": {
+          "$id": "#/properties/Westeros/items",
+          "type": "object",
+          "title": "The Items Schema",
+          "required": [
+            "House",
+            "title",
+            "description",
+            "item",
+            "Roadss"
+          ],
+          "properties": {
+            "House": {
+              "$id": "#/properties/Westeros/items/properties/House",
+              "type": "string",
+              "title": "The House Schema",
+              "default": "",
+              "examples": [
+                "Lanister"
+              ],
+              "pattern": "^(.*)$"
+            },
+            "title": {
+              "$id": "#/properties/Westeros/items/properties/title",
+              "type": "string",
+              "title": "The Title Schema",
+              "default": "",
+              "examples": [
+                "House Lannister of Casterly Rock"
+              ],
+              "pattern": "^(.*)$"
+            },
+            "description": {
+              "$id": "#/properties/Westeros/items/properties/description",
+              "type": "string",
+              "title": "The Description Schema",
+              "default": "",
+              "examples": [
+                "\n \n House Lannister of Casterly Rock is one of \n the Great Houses of Seven Kingdoms, and the principal house of the \n westerlands. Their seat is Casterly Rock, though another branch    \n exists that is based in nearby Lannisport.Their sigil is a golden lion  \n on a field of crimson \n \n The westerlands have the Reach to the South and The Riverlands to East"
+              ],
+              "pattern": "^(.*)$"
+            },
+            "item": {
+              "$id": "#/properties/Westeros/items/properties/item",
+              "type": "string",
+              "title": "The Item Schema",
+              "default": "",
+              "examples": [
+                "Gold"
+              ],
+              "pattern": "^(.*)$"
+            },
+            "Roadss": {
+              "$id": "#/properties/Westeros/items/properties/Roadss",
+              "type": "array",
+              "title": "The Roadss Schema",
+              "items": {
+                "$id": "#/properties/Westeros/items/properties/Roadss/items",
+                "type": "object",
+                "title": "The Items Schema",
+                "required": [
+                  "Destination",
+                  "Direction",
+                  "Title",
+                  "Hazard"
+                ],
+                "properties": {
+                  "Destination": {
+                    "$id": "#/properties/Westeros/items/properties/Roadss/items/properties/Destination",
+                    "type": "string",
+                    "title": "The Destination Schema",
+                    "default": "",
+                    "examples": [
+                      "Tyrell"
+                    ],
+                    "pattern": "^(.*)$"
+                  },
+                  "Direction": {
+                    "$id": "#/properties/Westeros/items/properties/Roadss/items/properties/Direction",
+                    "type": "string",
+                    "title": "The Direction Schema",
+                    "default": "",
+                    "examples": [
+                      "SOUTH"
+                    ],
+                    "pattern": "^(.*)$"
+                  },
+                  "Title": {
+                    "$id": "#/properties/Westeros/items/properties/Roadss/items/properties/Title",
+                    "type": "string",
+                    "title": "The Title Schema",
+                    "default": "",
+                    "examples": [
+                      "Golden Tooth"
+                    ],
+                    "pattern": "^(.*)$"
+                  },
+                  "Hazard": {
+                    "$id": "#/properties/Westeros/items/properties/Roadss/items/properties/Hazard",
+                    "type": "object",
+                    "title": "The Hazard Schema",
+                    "required": [
+                      "Description",
+                      "itemReq"
+                    ],
+                    "properties": {
+                      "Description": {
+                        "$id": "#/properties/Westeros/items/properties/Roadss/items/properties/Hazard/properties/Description",
+                        "type": "string",
+                        "title": "The Description Schema",
+                        "default": "",
+                        "examples": [
+                          "Growing strong, House tyrell is the most populated region . Everything is more expensive. You need Gold"
+                        ],
+                        "pattern": "^(.*)$"
+                      },
+                      "itemReq": {
+                        "$id": "#/properties/Westeros/items/properties/Roadss/items/properties/Hazard/properties/itemReq",
+                        "type": "string",
+                        "title": "The Itemreq Schema",
+                        "default": "",
+                        "examples": [
+                          "Gold"
+                        ],
+                        "pattern": "^(.*)$"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
