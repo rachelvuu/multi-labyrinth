@@ -11,7 +11,7 @@
         {   
             "House" : "Lanister",
             "title" : "House Lannister of Casterly Rock", 
-            "description" : "\n \n House Lannister of Casterly Rock is one of \n the Great Houses of Seven Kingdoms, and the principal house of the \n westerlands. Their seat is Casterly Rock, though another branch    \n exists that is based in nearby Lannisport.Their sigil is a golden lion  \n on a field of crimson \n The westerlands have the Reach to the South and The Riverlands to East",
+            "description" : "\n \n House Lannister of Casterly Rock is one of \n the Great Houses of Seven Kingdoms, and the principal house of the \n westerlands. Their seat is Casterly Rock, though another branch    \n exists that is based in nearby Lannisport.Their sigil is a golden lion  \n on a field of crimson \n The westerlands have the Reach to the SOUTH and The Riverlands to EAST",
             "item" : "Gold",
             "Roads" : [
                 {
@@ -37,7 +37,7 @@
         {
             "House" : "Tyrell",
             "title" : "House Tyrell of the Reach", 
-            "description" : "\n \nHouse Tyrell of Highgarden is an extinct Great House of Westeros. \nIt ruled over the Reach, a vast, fertile, \n and heavily-populated region of southwestern Westeros, \nfrom their castle-seat of Highgarden as Lords Paramount of the Reach and Wardens of \n the South. \n They have House Lannister to the North and Kinglandding to East",
+            "description" : "\n \nHouse Tyrell of Highgarden is an extinct Great House of Westeros. \nIt ruled over the Reach, a vast, fertile, \n and heavily-populated region of southwestern Westeros, \nfrom their castle-seat of Highgarden as Lords Paramount of the Reach and Wardens of \n the South. \n They have House Lannister to the NORTH and Kinglandding to EAST",
             "item" : "Food",
             "Roads" :[
                 {   
@@ -63,7 +63,7 @@
         {
             "House" : "Boratheon",
             "title" : "House Boratheon of the Stormlands", 
-            "description" : "\n \n House Baratheon of Storm's End is one of the Great Houses of Westeros, \n and is the principal house in the stormlands, which they rule as Lords\n Paramount of the Stormlands. \n Their seat, Storm's End, is an ancient castle raised by the Storm Kings\n They have the Just Dorne to the South",
+            "description" : "\n \n House Baratheon of Storm's End is one of the Great Houses of Westeros, \n and is the principal house in the stormlands, which they rule as Lords\n Paramount of the Stormlands. \n Their seat, Storm's End, is an ancient castle raised by the Storm Kings\n They have the Just Dorne to the SOUTH ANF Kinglands to the NORTH",
             "item" : "",
             "Roads" : [
                 {
@@ -89,7 +89,7 @@
         {
             "House" : "Targaryn",
             "title" : "The Capital, Home of the Targaryns", 
-            "description" : "\n \n King's Landing is the capital, and largest city, of the Seven Kingdoms.\n Located on the east coast of Westeros in the Crownlands, just north of \nwhere the Blackwater Rush flows into Blackwater Bay and overlooking Blackwater Bay,\n King's Landing is the site of the Iron Throne and \nthe Red Keep, the seat of the King of the Andals and the First Men.\n Since it centrally located their lies the Riversides to the North , the Reach to the West and StormLands to the South",
+            "description" : "\n \n King's Landing is the capital, and largest city, of the Seven Kingdoms.\n Located on the east coast of Westeros in the Crownlands, just north of \nwhere the Blackwater Rush flows into Blackwater Bay and overlooking Blackwater Bay,\n King's Landing is the site of the Iron Throne and \nthe Red Keep, the seat of the King of the Andals and the First Men.\n Since it centrally located. It has the Riversides to the North , the Reach to the West and StormLands to the South",
             "item": "Dragons",
             "Roads" : [
                 {

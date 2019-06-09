@@ -29,7 +29,6 @@ function handleInput(cmd:Command, arg:string) : boolean{
     else{
         return userUse(arg);
     }
-    console.log(game.westerosWords.houses);
     return true;
 }
 
