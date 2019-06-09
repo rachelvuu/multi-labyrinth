@@ -11,19 +11,7 @@ class Westeros {
         this.houses = this.makeHouse();
         this.makeRoads();
         this.introduction = this.data.Introduction;
-    }
-    getExit() {
-        return this.houses.get(this.data.Exit);
-    }
-    getStart() {
-        return this.houses.get(this.data.Start);
-    }
-    removeItemArea(house) {
-        let curentHouse = this.houses.get(house);
-        curentHouse.removeItem();
-        if (curentHouse !== undefined) {
-            this.houses.set(house, curentHouse);
-        }
+        return this.data;
     }
     makeMonster() {
         let monster = this.data.Monster;
@@ -59,6 +47,19 @@ class Westeros {
             }
             let id = currentAreaJSON.House;
             this.houses.get(id).setRoads(roads);
+        }
+    }
+    getExit() {
+        return this.houses.get(this.data.Exit);
+    }
+    getStart() {
+        return this.houses.get(this.data.Start);
+    }
+    removeItemArea(house) {
+        let curentHouse = this.houses.get(house);
+        curentHouse.removeItem();
+        if (curentHouse !== undefined) {
+            this.houses.set(house, curentHouse);
         }
     }
     getWin() {

@@ -2,10 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Area_1 = require("./Area");
 class Army {
-    constructor(currentLocation = new Area_1.Area("", "", ""), armyStats = new Set(), id = Math.random()) {
+    constructor(id = Math.random(), currentLocation = new Area_1.Area("", "", ""), armyStats = new Set()) {
         this.armyStats = armyStats;
         this.id = id;
         this.currentLocation = currentLocation;
+    }
+    equals(army) {
+        army.getId() == this.id;
     }
     getId() {
         return this.id;

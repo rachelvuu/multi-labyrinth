@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const Roads_1 = require("./Roads");
+const Item_1 = require("./Item");
+const Area_1 = require("./Area");
 const Army_1 = require("./Army");
 const jSONToCard_1 = require("./jSONToCard");
 class Game {
@@ -20,6 +22,9 @@ class Game {
     removeItemFromHouse() {
         this.westerosWords.removeItemArea(this.player.getHouse());
     }
+    modify(world) {
+        this.westerosWords = world;
+    }
     startGame() {
         if (this.isPlayerValid()) {
             console.log(this.westerosWords.introduction);
@@ -34,6 +39,9 @@ class Game {
     }
     displayAreadDetails() {
         this.player.displayDetails();
+    }
+    getHouses() {
+        return this.westerosWords.houses;
     }
     handleInputINVENTORY() {
         this.player.showArmy();
@@ -122,6 +130,86 @@ class Game {
     }
     addItem(item) {
         this.player.addToArmy(item);
+    }
+    playerTakes(arg) {
+        if (arg == this.getPlayerAreaTitle()) {
+            console.log("Now you have the " + arg);
+            this.addItem(new Item_1.Item(arg));
+            this.playerRemoveItemArea();
+            this.removeItemFromHouse();
+        }
+        else {
+            console.log("This place doesn't have what you are looking for.");
+        }
+        this.monsterMove();
+        return this.checkContinue();
+    }
+    playerChange() {
+        this.changeArea();
+        if (this.checkForWin(this.winningItem)) {
+            console.log("You Won The Game");
+            return false;
+        }
+        this.displayAreadDetails();
+        console.log();
+        console.log();
+        return this.checkContinue();
+    }
+    //Returns true if the game continues
+    checkContinue() {
+        if (this.gameOver()) {
+            console.log(this.getMonsterTitle() + " has apeared you need to finish him");
+            return (this.gameFinalBattle());
+        }
+        else {
+            this.monsterMove();
+        }
+        return true;
+    }
+    userGo(arg) {
+        if (this.getPlayerValidDirection(arg.toUpperCase())) {
+            let road = this.getValidRoad(arg.toUpperCase());
+            this.setRoads(road);
+            let hazard = road.getHazard();
+            if (hazard.getTitle() != "") {
+                console.log(hazard.getTitle());
+            }
+            else {
+                return this.playerChange();
+            }
+        }
+        else {
+            console.log("Their is no way from this Direction");
+        }
+        return this.checkContinue();
+    }
+    userUse(arg) {
+        let item = new Item_1.Item(arg);
+        if (this.gameOver()) {
+            if (arg == this.getMonsterItemTitle()) {
+                console.log("YOU WON THE WAR YOU DEFEATED THE MONSTER");
+                this.changeMonsterArea(new Area_1.Area("Not on the map"));
+                this.removeItem(item);
+                return true;
+            }
+        }
+        if (this.checkHasItemFinal(item)) {
+            this.removeItem(item);
+            return this.playerChange();
+        }
+        else {
+            console.log(" You dont have the item");
+        }
+        return true;
+    }
+    userDrop(arg) {
+        if (this.player.hasItem(new Item_1.Item(arg))) {
+            //Adds the item to the area
+            //this.
+        }
+        else {
+            console.log("You dont have the item you want to drop");
+        }
     }
 }
 exports.Game = Game;

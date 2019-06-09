@@ -19,9 +19,10 @@ var Command;
     Command["USE"] = "USE";
     Command["INVENTORY"] = "INVENTORY";
     Command["QUIT"] = "QUIT";
+    Command["DROP"] = "DROP";
 })(Command = exports.Command || (exports.Command = {}));
 //for easy listing/comparison
-const commands = [Command.GO, Command.LOOK, Command.TAKE, Command.USE, Command.INVENTORY, Command.QUIT];
+const commands = [Command.GO, Command.LOOK, Command.TAKE, Command.USE, Command.INVENTORY, Command.QUIT, Command.DROP];
 /**
  * A class for handling input commands for a basic adventure game.
  * Acts as a simple wrapper around Node's `readline` module.
