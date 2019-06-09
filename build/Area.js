@@ -8,6 +8,7 @@ class Area {
         this.description = description;
         this.directions = directions;
         this.itemFound = itemFound;
+        this.droppedItem = new Set();
     }
     getTitle() {
         return this.title;
@@ -61,7 +62,13 @@ class Area {
         console.log(this.title);
         console.log(this.description);
         console.log("In this kingdom you can find: " + this.itemFound.getTitle());
+        this.printDroppedItems();
         console.log();
+    }
+    printDroppedItems() {
+        this.droppedItem.forEach(element => {
+            console.log("Someone dropped :" + element.getTitle());
+        });
     }
 }
 exports.Area = Area;

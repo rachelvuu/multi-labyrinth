@@ -4,17 +4,17 @@ import {Roads} from "./Roads";
 import { Hazard } from "./Hazard";
 import { Monster } from "./Monster";
 
-export class Westeros{
+export class WesterosWorld{
 
     data: any ;
     introduction :String;
     houses : Map<String,Area>;
+
     constructor(){
         this.data = require('../src/Westeros.json');
         this.houses = this.makeHouse();
         this.makeRoads();
         this.introduction = this.data.Introduction;
-        return this.data;
     }
 
     makeMonster(){
@@ -71,15 +71,14 @@ export class Westeros{
         if(curentHouse !== undefined){
             this.houses.set(house, curentHouse );
         }
-        
     }
 
     getWin(){
         return new Item(this.data.WinItem);
     }
 
-    getHouses(){
-        return new Map<String,Area>(this.houses);
+    getHouses():Map<String,Area> {
+        return this.houses;
     }
 
     getIntro(){

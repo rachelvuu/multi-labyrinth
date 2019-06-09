@@ -5,25 +5,12 @@ const Item_1 = require("./Item");
 const Roads_1 = require("./Roads");
 const Hazard_1 = require("./Hazard");
 const Monster_1 = require("./Monster");
-class Westeros {
+class WesterosWorld {
     constructor() {
         this.data = require('../src/Westeros.json');
         this.houses = this.makeHouse();
         this.makeRoads();
         this.introduction = this.data.Introduction;
-    }
-    getExit() {
-        return this.houses.get(this.data.Exit);
-    }
-    getStart() {
-        return this.houses.get(this.data.Start);
-    }
-    removeItemArea(house) {
-        let curentHouse = this.houses.get(house);
-        curentHouse.removeItem();
-        if (curentHouse !== undefined) {
-            this.houses.set(house, curentHouse);
-        }
     }
     makeMonster() {
         let monster = this.data.Monster;
@@ -61,15 +48,28 @@ class Westeros {
             this.houses.get(id).setRoads(roads);
         }
     }
+    getExit() {
+        return this.houses.get(this.data.Exit);
+    }
+    getStart() {
+        return this.houses.get(this.data.Start);
+    }
+    removeItemArea(house) {
+        let curentHouse = this.houses.get(house);
+        curentHouse.removeItem();
+        if (curentHouse !== undefined) {
+            this.houses.set(house, curentHouse);
+        }
+    }
     getWin() {
         return new Item_1.Item(this.data.WinItem);
     }
     getHouses() {
-        return new Map(this.houses);
+        return this.houses;
     }
     getIntro() {
         return this.introduction;
     }
 }
-exports.Westeros = Westeros;
+exports.WesterosWorld = WesterosWorld;
 //# sourceMappingURL=jSONToCard.js.map

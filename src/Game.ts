@@ -3,13 +3,13 @@ import { Roads } from "./Roads";
 import { Item } from "./Item";
 import { Area } from "./Area";
 import { Army } from "./Army";
-import { Westeros } from "./jSONToCard";
+import { WesterosWorld } from "./jSONToCard";
 import { Monster } from "./Monster";
 
 
 export class Game {
 
-    westerosWords: Westeros;
+    westerosWords: WesterosWorld;
     areas: Map<String, Area>;
     areaList: Set<String>;
     player: Army;
@@ -18,9 +18,10 @@ export class Game {
     winningItem: Item;
 
     constructor() {
-        this.westerosWords = new Westeros();
+        this.westerosWords = new WesterosWorld();
         this.areas = this.westerosWords.getHouses();
         this.areaList = new Set<String>(this.areas.keys());
+        console.log(this.getRandomStartingPlace());
         this.player = new Army(this.getRandomStartingPlace());
         this.monster = this.westerosWords.makeMonster();
         this.road = new Roads("", "");
@@ -36,12 +37,13 @@ export class Game {
         this.westerosWords.removeItemArea(this.player.getHouse());
     }
 
-    modify(world: Westeros) {
+    modify(world: WesterosWorld) {
         this.westerosWords = world;
     }
 
     startGame() {
-        if (this.isPlayerValid()) {
+        console.log(this.player);
+        if (this.player.getHouse() != "") {
             console.log(this.westerosWords.introduction);
             console.log(this.displayAreadDetails());
         }
@@ -62,7 +64,6 @@ export class Game {
         return this.westerosWords.houses;
     }
 
-
     handleInputINVENTORY(): void {
         this.player.showArmy();
     }
@@ -82,14 +83,11 @@ export class Game {
         }
     }
 
-    getArea(place: String): any {
-
-        return this.areas.get(place);
-    }
+    
 
     getRandomStartingPlace(): any {
-        //Make a random starter Removed for testing
-        let randomIndex = Math.floor(Math.random() * this.areaList.size);
+        // Make a random starter Removed for testing
+        let randomIndex = Math.floor( Math.random() * this.areaList.size );
         let i = 0;
         for (let currentArea of this.areaList) {
             if (i == randomIndex) {
@@ -99,9 +97,8 @@ export class Game {
         }
         return undefined;
         // For predicatble behavior
-        //let area = this.westerosWords.getStart() ? (this.westerosWords.getStart() ) : new Area();
-        //return(area);
-
+        /*let area = this.westerosWords.getStart() ? (this.westerosWords.getStart() ) : new Area();
+        return(area);*/
     }
 
     setRoads(road: Roads = new Roads("", "")) {
