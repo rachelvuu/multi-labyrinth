@@ -16,6 +16,7 @@ export class Area implements AreaCharacteristics{
     public description: String;
     public directions: Map<String , Roads>;
     public itemFound : Item;
+    public droppedItem : Set<Item>;
 
     constructor (house : String= "" , title: String ="", description : String ="",  itemFound : Item = new Item("Nothing") , directions : Map<String , Roads> = new Map<String , Roads>()) {
         this.house = house;
@@ -23,6 +24,7 @@ export class Area implements AreaCharacteristics{
         this.description = description;
         this.directions= directions;
         this.itemFound = itemFound;
+        this.droppedItem = new Set<Item>();
     }
     
     public getTitle() :  String {
@@ -90,7 +92,15 @@ export class Area implements AreaCharacteristics{
         console.log(this.title);
         console.log(this.description);
         console.log("In this kingdom you can find: "+ this.itemFound.getTitle());
+        this.printDroppedItems();
         console.log();
+    }
+
+
+    printDroppedItems(){
+        this.droppedItem.forEach(element => {
+            console.log("Someone dropped :" + element.getTitle());
+        });
     }
 
     

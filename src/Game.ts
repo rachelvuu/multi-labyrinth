@@ -1,92 +1,98 @@
 
 import { Roads } from "./Roads";
-import {Item} from "./Item";
-import {Area} from "./Area";
+import { Item } from "./Item";
+import { Area } from "./Area";
 import { Army } from "./Army";
-import {Westeros} from "./jSONToCard";
-import {Monster} from "./Monster";
+import { Westeros } from "./jSONToCard";
+import { Monster } from "./Monster";
 
 
 export class Game {
 
-    westerosWords : Westeros;
-    areas : Map<String,Area>;
+    westerosWords: Westeros;
+    areas: Map<String, Area>;
     areaList: Set<String>;
-    player : Army;
-    monster : Monster;
-    road : Roads;
+    player: Army;
+    monster: Monster;
+    road: Roads;
     winningItem: Item;
 
-    constructor(){
+    constructor() {
         this.westerosWords = new Westeros();
         this.areas = this.westerosWords.getHouses();
         this.areaList = new Set<String>(this.areas.keys());
         this.player = new Army(this.getRandomStartingPlace());
         this.monster = this.westerosWords.makeMonster();
-        this.road = new Roads("","");
+        this.road = new Roads("", "");
         this.winningItem = this.westerosWords.getWin();
         this.startGame();
     }
 
-    getExit(){
+    getExit() {
         return this.westerosWords.getExit();
     }
 
-    removeItemFromHouse(){
+    removeItemFromHouse() {
         this.westerosWords.removeItemArea(this.player.getHouse());
     }
-    
-    startGame(){
-        if(this.isPlayerValid()){
+
+    modify(world: Westeros) {
+        this.westerosWords = world;
+    }
+
+    startGame() {
+        if (this.isPlayerValid()) {
             console.log(this.westerosWords.introduction);
             console.log(this.displayAreadDetails());
         }
-        else{ 
+        else {
             console.log("Your World cannot me made. Try seeing the Schema")
         }
     }
 
-    getLocationCurrentPlayer(){
+    getLocationCurrentPlayer() {
         this.player.getLocation();
     }
 
-    displayAreadDetails() : void{
+    displayAreadDetails(): void {
         this.player.displayDetails();
     }
 
-    
+    getHouses() {
+        return this.westerosWords.houses;
+    }
 
 
-    handleInputINVENTORY(): void{
+    handleInputINVENTORY(): void {
         this.player.showArmy();
     }
 
-    gameOver(){
+    gameOver() {
         return (this.player.getLocation() == this.monster.getLocation())
     }
 
-    gameFinalBattle(){
-        if(this.player.hasItem(this.monster.getMonsterItem())){
+    gameFinalBattle() {
+        if (this.player.hasItem(this.monster.getMonsterItem())) {
             console.log("You Can defeat the monster. Use " + this.monster.getMonsterItemTitle());
             return true;
         }
-        else{
+        else {
             console.log("You dont have the magical item to beat the monster. XD you are ded");
             return false;
         }
     }
 
-    getArea(place: String) : any {
-      
+    getArea(place: String): any {
+
         return this.areas.get(place);
     }
 
-    getRandomStartingPlace()  :any {
+    getRandomStartingPlace(): any {
         //Make a random starter Removed for testing
         let randomIndex = Math.floor(Math.random() * this.areaList.size);
-        let i =0;
+        let i = 0;
         for (let currentArea of this.areaList) {
-            if(i == randomIndex){
+            if (i == randomIndex) {
                 return this.areas.get(currentArea)
             }
             i++;
@@ -95,78 +101,163 @@ export class Game {
         // For predicatble behavior
         //let area = this.westerosWords.getStart() ? (this.westerosWords.getStart() ) : new Area();
         //return(area);
-        
+
     }
 
-    setRoads(road : Roads= new Roads("","")){
+    setRoads(road: Roads = new Roads("", "")) {
         this.road = road;
     }
 
-    removeItem(item :Item){
+    removeItem(item: Item) {
         this.player.removeItem(item);
     }
 
-    changeArea() : void {
+    changeArea(): void {
         this.player.changeArea(this.road.getDestination());
     }
 
-    checkForWin(item :Item) : boolean {
+    checkForWin(item: Item): boolean {
         return this.checkHasItemFinal(item) && this.checkFinalLocation();
     }
     checkFinalLocation(): boolean {
         return this.player.getHouse() == this.getExit()!.getHouse();
     }
 
-    checkHasItemFinal(item : Item) : boolean {
+    checkHasItemFinal(item: Item): boolean {
         return this.player.hasItem(item);
     }
 
-    getPlayer() : Army{
+    getPlayer(): Army {
         return this.player;
     }
-    isPlayerValid() : boolean{
+    isPlayerValid(): boolean {
         return this.player.getHouse() != "";
     }
 
-    getMonsterTitle(){
+    getMonsterTitle() {
         return this.monster.getTitle();
     }
 
-    getPlayerValidDirection(arg : String) : boolean{
+    getPlayerValidDirection(arg: String): boolean {
         return this.player.getValidDirection(arg);
     }
 
-    getLocationRoad(arg :String){
+    getLocationRoad(arg: String) {
         return this.player.getRoad(arg);
     }
 
-    monsterMove(){
+    monsterMove() {
         this.monster.changeMonsterMove();
     }
 
-    getValidRoad(arg: String): Roads|undefined{
+    getValidRoad(arg: String): Roads | undefined {
         return this.player.getRoad(arg);
     }
 
-    getMonsterItemTitle(): String{
+    getMonsterItemTitle(): String {
         return this.monster.getMonsterItemTitle();
     }
 
-    changeMonsterArea(area :Area): void{
+    changeMonsterArea(area: Area): void {
         this.monster.changeArea(area);
     }
 
-    getPlayerAreaTitle():String{
+    getPlayerAreaTitle(): String {
         return this.player.getItemTitle();
     }
 
-    playerRemoveItemArea(){
+    playerRemoveItemArea() {
         this.player.removeItemArea();
     }
 
-    addItem(item: Item){
+    addItem(item: Item) {
         this.player.addToArmy(item);
     }
 
 
+    playerTakes(arg: String): boolean {
+        if (arg == this.getPlayerAreaTitle()) {
+            console.log("Now you have the " + arg);
+            this.addItem(new Item(arg));
+            this.playerRemoveItemArea();
+            this.removeItemFromHouse();
+        }
+        else {
+            console.log("This place doesn't have what you are looking for.");
+        }
+        this.monsterMove();
+        return this.checkContinue();
+    }
+
+    playerChange(): boolean {
+        this.changeArea();
+        if (this.checkForWin(this.winningItem)) {
+            console.log("You Won The Game");
+            return false;
+        }
+        this.displayAreadDetails();
+        console.log();
+        console.log();
+        return this.checkContinue();
+    }
+
+    //Returns true if the game continues
+    checkContinue() {
+        if (this.gameOver()) {
+            console.log(this.getMonsterTitle() + " has apeared you need to finish him");
+            return (this.gameFinalBattle());
+        }
+        else {
+            this.monsterMove();
+        }
+        return true;
+    }
+
+    userGo(arg: String): boolean {
+        if (this.getPlayerValidDirection(arg.toUpperCase())) {
+            let road = this.getValidRoad(arg.toUpperCase());
+            this.setRoads(road);
+            let hazard = road!.getHazard();
+            if (hazard.getTitle() != "") {
+                console.log(hazard.getTitle());
+            }
+            else {
+                return this.playerChange();
+            }
+        }
+        else {
+            console.log("Their is no way from this Direction");
+        }
+        return this.checkContinue();
+    }
+
+    userUse(arg: String) {
+        let item = new Item(arg);
+        if (this.gameOver()) {
+            if (arg == this.getMonsterItemTitle()) {
+                console.log("YOU WON THE WAR YOU DEFEATED THE MONSTER");
+                this.changeMonsterArea(new Area("Not on the map"));
+                this.removeItem(item);
+                return true;
+            }
+        }
+        if (this.checkHasItemFinal(item)) {
+            this.removeItem(item);
+            return this.playerChange()
+        }
+        else {
+            console.log(" You dont have the item");
+        }
+        return true;
+    }
+
+    userDrop(arg :  String){
+        if(this.player.hasItem(new Item(arg))){
+            //Adds the item to the area
+            //this.
+        }
+        else{
+            console.log("You dont have the item you want to drop");
+        }
+    }
 }

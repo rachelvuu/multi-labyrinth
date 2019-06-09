@@ -11,20 +11,20 @@ parser.start();
 function handleInput(cmd:Command, arg:string) : boolean{
     if(cmd === Command.INVENTORY){
         game.handleInputINVENTORY();
-        
-        return gameOver();
+        return game.checkContinue();
     }
     else if(cmd === Command.LOOK){
         game.displayAreadDetails();
-       
-        return gameOver();
+        return game.checkContinue();
     }
     else if(cmd === Command.GO){   
         return userGO(arg);
     }
-
     else if(cmd === Command.TAKE){
         userTake(arg);
+    }
+    else if(cmd === Command.DROP){
+        throw new Error("not Implemented");
     }
     else{
         return userUse(arg);
@@ -32,79 +32,19 @@ function handleInput(cmd:Command, arg:string) : boolean{
     return true;
 }
 
-function userGO(arg :String){
-    if(game.getPlayerValidDirection(arg.toUpperCase())){
-        let road = game.getValidRoad(arg.toUpperCase());
-  
-        game.setRoads(road);
-        let hazard  = road!.getHazard();
-        if(hazard.getTitle() != "") {
-            console.log(hazard.getTitle());
-        }
-        else{
-            return playerChange();
-        }
-    }
-    else{
-        console.log("Their is no way from this Direction");
-    }
-    return gameOver();
+function userGO(arg :String) :  boolean{
+   return game.userGo(arg);
 }
 
-function userTake(arg :String){
-    if(arg == game.getPlayerAreaTitle()){
-        console.log("Now you have the " + arg);
-        game.addItem(new Item(arg));
-        game.playerRemoveItemArea();
-        game.removeItemFromHouse();
-    }
-    else{
-        console.log("This place doesn't have what you are looking for.");
-    }
-    game.monsterMove();
-    return gameOver();
+function userTake(arg :String) :  boolean{
+    game.playerTakes(arg);
+    return game.checkContinue();
 }
 
-function userUse(arg : String){
-    let item = new Item(arg);
-    if(game.gameOver()){
-        if(arg == game.getMonsterItemTitle() ){
-            console.log("YOU WON THE WAR YOU DEFEATED THE MONSTER");
-            game.changeMonsterArea(new Area("Not on the map"));
-            game.removeItem(item);
-            return true;
-        }
-    }
-    if(game.checkHasItemFinal(item)) {
-        game.removeItem(item);
-        return playerChange()
-
-    }
-    else{
-        console.log(" You dont have the item");
-    }
-    return true;
+function userUse(arg : String) :  boolean{
+    return game.userUse(arg);
 }
 
-function playerChange(){
-    game.changeArea();
-    if(game.checkForWin(game.winningItem)){
-        console.log("You Won The Game");
-        return false;
-    }
-    game.displayAreadDetails();
-    console.log();
-    console.log();
-    return gameOver();
-}
-
-function gameOver(){
-    if(game.gameOver()){
-        console.log(game.getMonsterTitle() + " has apeared you need to finish him");
-        return (game.gameFinalBattle());
-    }
-    else{
-        game.monsterMove();
-    }
-    return true;
-}
+//function userDrop(arg : String) : boolean{
+    // game.userDrop(arg);
+//}

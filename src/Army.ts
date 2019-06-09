@@ -22,7 +22,6 @@ export class Army implements Moveable{
         return this.id;
     }
 
-
     getLocation() :Area {
         return this.currentLocation;
     }

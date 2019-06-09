@@ -1,12 +1,9 @@
-interface ItemCharacteristics{
-    title : String;
-    getTitle() : String;
-}
 
 
-export class Item implements ItemCharacteristics {
 
-    title : String;
+export class Item  {
+
+    protected title : String;
     
     constructor( title : String  ){
         this.title =  title;   

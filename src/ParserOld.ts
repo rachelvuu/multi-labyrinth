@@ -9,11 +9,12 @@ export enum Command {
   TAKE = "TAKE",
   USE = "USE",
   INVENTORY = "INVENTORY",
-  QUIT = "QUIT"
+  QUIT = "QUIT",
+  DROP = "DROP"
 }
 
 //for easy listing/comparison
-const commands = [Command.GO, Command.LOOK, Command.TAKE, Command.USE, Command.INVENTORY, Command.QUIT];
+const commands = [Command.GO, Command.LOOK, Command.TAKE, Command.USE, Command.INVENTORY, Command.QUIT, Command.DROP];
 
 /**
  * A class for handling input commands for a basic adventure game.
