@@ -10,19 +10,25 @@ import { Westeros } from "./jSONToCard";
 export class MultiPlayerGame {
     
     world : Westeros;
-    players : Map<String, Army>;
+    players : Set< Army>;
 
     constructor(){
         this.world = new Westeros();
-        this.players = new Map<String,Army>();
+        this.players = new Set<Army>();
     }
 
-    addPlayer(id: String){
-        this.players = this.players.set(id, new Army());
+    addPlayer(id: number){
+        this.players = this.players.add(new Army(id));
     }
 
-    getPlayer(id : String) : Army| undefined{
-        return this.players.get(id);
+    getPlayer(id : Number) : Army| undefined{
+        this.players.forEach(element => {
+            if(element.getId() === id){
+                return element;
+            }
+        });
+        console.log("ID doesn't exists")
+        return undefined;
     }
 
     modifyWorld( world : Westeros){

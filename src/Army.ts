@@ -11,14 +11,17 @@ export class Army implements Moveable{
     currentLocation: Area;
     public armyStats : Set<Item>;
 
-    constructor(currentLocation : Area = new Area("","","")  , armyStats : Set<Item> = new Set<Item>() , id:number = Math.random()) {
+    constructor(id:number = Math.random(), currentLocation : Area = new Area("","","")  , armyStats : Set<Item> = new Set<Item>()) {
         this.armyStats = armyStats;
         this.id = id;
         this.currentLocation = currentLocation;
     }
 
+    equals(army : Army){
+         army.getId() == this.id;
+    }
 
-    getId(){
+    getId(): number{
         return this.id;
     }
 
