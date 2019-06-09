@@ -14,17 +14,17 @@ server.on('connection', (client) => {
   //event handler for ALL messages (from that client)
   client.on('message', (message: string) => {
       console.log(`log: received ${message}`)
-      console.log('log: ' + sendText(client, message, clients.indexOf(client)));
-      
-      client.send(`You said: "${message}"`); //echo back
+      sendText(client, message, clients.indexOf(client));
   });
 });
 
 function sendText(client: WebSocket, message: string, playerID: number) {
+  let splitMessage = message.split(' ', 2);
   let msg = {
-    cmd: "commands",
-    id: playerID,
-    text: message
+    cmd: splitMessage[0],
+    text: splitMessage[1],
+    id: playerID
   }
   client.send(JSON.stringify(msg));
+  client.send(`You said: "${message}"`); //echo back
 }
