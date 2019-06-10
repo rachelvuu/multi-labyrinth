@@ -144,6 +144,7 @@ class Game {
   }
 }
 
+//move mapData, map, enemy into Game class
 let mapData : MapData = data;
 let map : Map = new Map(mapData);
 let enemy : Enemy = new Enemy(mapData.enemy);
