@@ -8,7 +8,7 @@ let parser = new CommandParser(handleInput);
 parser.start();
 
 
-function handleInput(cmd:Command, arg:string) : boolean{
+export function handleInput(cmd:Command, arg:string) : boolean{
     if(cmd === Command.INVENTORY){
         game.handleInputINVENTORY();
         return game.checkContinue();

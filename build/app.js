@@ -28,6 +28,7 @@ function handleInput(cmd, arg) {
     }
     return true;
 }
+exports.handleInput = handleInput;
 function userGO(arg) {
     return game.userGo(arg);
 }

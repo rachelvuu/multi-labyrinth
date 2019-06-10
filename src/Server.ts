@@ -1,4 +1,6 @@
 import WebSocket from 'ws';
+import { Command } from './Parser'
+import { handleInput } from './app'
 
 const PORT = 8080;
 
@@ -19,12 +21,25 @@ server.on('connection', (client) => {
 });
 
 function sendText(client: WebSocket, message: string, playerID: number) {
+
   let splitMessage = message.split(' ', 2);
-  let msg = {
-    cmd: splitMessage[0],
-    text: splitMessage[1],
-    id: playerID
+  let cmd:Command = <Command>splitMessage[0];
+  let text: string = splitMessage[1];
+  
+  if (handleInput(cmd,text)) {
+    let msg = {
+      cmd: cmd,
+      text: splitMessage[1],
+      id: playerID
+    }
+    client.send(JSON.stringify(msg));
+    client.send(`You said: "${message}"`); //echo back
+  } else {
+    client.send('Invalid command. Try again.');
   }
-  client.send(JSON.stringify(msg));
-  client.send(`You said: "${message}"`); //echo back
+  
+}
+
+function broadcastEveryoneExceptActor() {
+
 }

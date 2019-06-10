@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ws_1 = __importDefault(require("ws"));
+const app_1 = require("./app");
 const PORT = 8080;
 //The server initiates listening once instantiated
 const server = new ws_1.default.Server({ port: PORT });
@@ -22,12 +23,21 @@ server.on('connection', (client) => {
 });
 function sendText(client, message, playerID) {
     let splitMessage = message.split(' ', 2);
-    let msg = {
-        cmd: splitMessage[0],
-        text: splitMessage[1],
-        id: playerID
-    };
-    client.send(JSON.stringify(msg));
-    client.send(`You said: "${message}"`); //echo back
+    let cmd = splitMessage[0];
+    let text = splitMessage[1];
+    if (app_1.handleInput(cmd, text)) {
+        let msg = {
+            cmd: cmd,
+            text: splitMessage[1],
+            id: playerID
+        };
+        client.send(JSON.stringify(msg));
+        client.send(`You said: "${message}"`); //echo back
+    }
+    else {
+        client.send('Invalid command. Try again.');
+    }
+}
+function broadcastEveryoneExceptActor() {
 }
 //# sourceMappingURL=Server.js.map
