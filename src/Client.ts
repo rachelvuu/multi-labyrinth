@@ -5,13 +5,15 @@ const io = readline.createInterface({ input: process.stdin, output: process.stdo
 
 import WebSocket from 'ws';
 
-//player handleInput
+//client has player's handleInput
 //player logic & data
 
 //more prone to client-side data manipulation/hacks
 //less resource processing for server (faster)
 
 //all references to map will be retrieved from server
+//map.border (static value) will be saved client-side once on first connection
+//server calls player.setId(incremental value based on clients connected) upon first connection
 
 //connect to the server
 const connection = new WebSocket(`ws://localhost:8080`);
@@ -34,6 +36,10 @@ class Player extends Entity implements Moveable {
   constructor(coords:Coords) {
     super(coords, 'player');
     this.id = -1;
+  }
+
+  setId(id:number) {
+    this.id = id;
   }
 
   move(direction:string) {
@@ -157,6 +163,10 @@ class PlayerController {
     } else if(cmd === Command.INVENTORY) {
       player.openInventory();
     }
+  }
+
+  constructor() {
+    //this.start() here instead
   }
 
   start() {

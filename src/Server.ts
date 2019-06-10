@@ -2,15 +2,18 @@ import WebSocket from 'ws';
 import {Coords,Entity,HazardEntity,ItemEntity,MapData,Moveable} from './app';
 //import {Player} from './Client';
 import data from './map.json';
+import * as lodash from 'lodash';
+let _: any = lodash;
 
-//one map data instance
-//includes --> hazard/item data
-
-//monster logic
-//game win/lose logic
+//server has one map data instance
+//includes --> hazard/item/enemy data
+//--> enemy logic
+//--> game win/lose logic
+//don't need set/array of player since all player data is handled client-side
 
 //server class
-//-->receive player data thru string type cast into objects
+//receive player data thru string type cast into objects
+//set playerId when new player connects
 
 const PORT = 8080;
 
@@ -26,7 +29,7 @@ server.on('connection', (client) => {
   //event handler for ALL messages (from that client)
   client.on('message', (message: string) => {
       console.log(`log: received ${message}`)
-      client.send(`You said: "${message}"`); //echo back
+      client.send(`You said: "${message}"`);
   });
 });
 
@@ -101,8 +104,7 @@ class Enemy extends HazardEntity implements Moveable {
 //new logic to determine when enemy can move
 //enemyMove after one player moved?
 class Game {
-
-  //need to create new turn tracker
+  //need to create new turn tracker for enemy movement
   handleTurn() {
     if(!enemy.dead) {
     enemy.chase(player);
@@ -111,7 +113,8 @@ class Game {
     this.showLocations();
   }
   
-  //notify player location to player client when player moves
+  //TD:
+  //notify player location to player client when player moves <-- can be processed client-side instead
   //notify enemy location to all clients when enemy moves
   showLocations() {
     console.log('============================');
@@ -122,6 +125,8 @@ class Game {
     console.log('============================');
   }
   
+  //if player.dead -> stop calling parser.prompt()
+  //if player won -> notify all clients & kill all players
   gameEnded():boolean {
     if(player.dead) {
       console.log('(Lost) You Died!');

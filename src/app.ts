@@ -1,7 +1,7 @@
 //import {Command, CommandParser} from './Parser';
-import * as lodash from 'lodash';
+//import * as lodash from 'lodash';
 //import data from './map.json';
-let _: any = lodash;
+//let _: any = lodash;
 
 export interface Coords {
   x:number
