@@ -59,12 +59,11 @@ class Game {
         return false;
     }
     start() {
-        let parser = new Parser_1.CommandParser(this.handleInput, false); //pass in the "handler" callback
+        let parser = new Parser_1.CommandParser(this.handleInput); //pass in the "handler" callback
         console.log('Input a command:');
         parser.start();
     }
 }
-exports.Game = Game;
 class Entity {
     constructor(coords, name) {
         this.coords = coords;
