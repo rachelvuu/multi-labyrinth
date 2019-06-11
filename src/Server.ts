@@ -41,9 +41,9 @@ export class Map {
   getEntities():Entity[] {
     return this.entities;
   }
-  removeEntity(entity:Entity) {
+  removeEntity(entityName:string) {
     //TD: use string to get entity instead to avoid having to send entity object to server from client
-    _.pull(this.entities, entity);
+    //_.pull(this.entities, entity);
   }
 
   updateClients() {
@@ -140,13 +140,22 @@ class Game {
   constructor() {
     //TD: load map data
   }
+
+  control(message:string) {
+    if(message == 'fight') {
+      //enemy.fight();
+    } else if(message.includes('remove')) {
+      let entityName = message.split(',');
+      map.removeEntity(entityName);
+    }
+  }
 }
 
 //TD:
-//move mapData, map, enemy, clients into Game class
+//move mapData, map, enemy, clients into Game class and others into classes for style
 let mapData : MapData = data;
 let map : Map = new Map(mapData);
-//let enemy : Enemy = new Enemy(mapData.enemy);
+let enemy : Enemy = new Enemy(mapData.enemy);
 let gameInstance : Game = new Game();
 
 let PORT = 8080;
@@ -165,8 +174,9 @@ server.on('connection', (client:WebSocket) => {
   client.send('Input a command:');
 
   //event handler for ALL messages (from that client)
-  client.on('message', (message: string) => {
-      console.log(`log: received ${message}`)
+  client.on('message', (message:string) => {
+      console.log(`RECEIVED COMMAND: ${message}`)
+      gameInstance.control(message);
       //client.send(`You said: "${message}"`);
   });
 });

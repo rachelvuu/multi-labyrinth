@@ -2,9 +2,10 @@ import {Coords,Entity,HazardEntity,ItemEntity,Item,Moveable} from './app';
 import {Map, Enemy} from './Server';
 import {Command, CommandParser} from './Parser';
 import * as readline from 'readline';
-const io = readline.createInterface({ input: process.stdin, output: process.stdout });
-
+//let io = readline.createInterface({ input: process.stdin, output: process.stdout });
 import WebSocket from 'ws';
+import * as lodash from 'lodash';
+let _: any = lodash;
 
 //client has player's handleInput
 //player logic & data
@@ -83,7 +84,7 @@ export class Player extends Entity implements Moveable {
         if(player.getCoords().x == entity.getCoords().x && player.getCoords().y == entity.getCoords().y) {
           console.log('Taken ' + entity.name);
           this.inventory.push(<Item>{itemName:entity.itemName, usedOn:entity.usedOn});
-          connection.send('remove ' + entity.name);
+          connection.send('remove,' + entity.name);
           //map.removeEntity(entity); //TD: playerController.sendCommand('remove ' + entity.name); --> server's map.removeEntity
           return;
         }
@@ -99,7 +100,7 @@ export class Player extends Entity implements Moveable {
           if(entity.name == inventoryItem.usedOn && inventoryItem.usedOn == this.lastSeenHazard) {
             console.log('Used ' + inventoryItem.itemName + ' on ' + inventoryItem.usedOn);
             this.removeItem(inventoryItem);
-            connection.send('remove ' + entity.name);
+            connection.send('remove,' + entity.name);
             //map.removeEntity(entity); //TD: playerController.sendCommand('remove ' + entity.name); --> server's map.removeEntity
             return;
           }
@@ -152,18 +153,18 @@ class PlayerController {
     arg = arg.toLowerCase();
     if(cmd === Command.GO){
       connection.send('GO');
-      //player.move(arg);
+      player.move(arg);
     } else if(cmd === Command.TAKE) {
-      //player.take(arg);
+      player.take(arg);
     } else if(cmd === Command.USE) {
-      //player.use(arg);
+      player.use(arg);
     } else if(cmd === Command.LOOK) {
-      //player.look();
+      player.look();
     } else if(cmd === Command.INVENTORY) {
-      //player.openInventory();
+      player.openInventory();
     }
     //update Map object
-    return true;//!this.gameEnded();
+    return true;//return !this.gameEnded();
   }
 
   constructor() {
