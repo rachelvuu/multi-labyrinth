@@ -1,4 +1,5 @@
 import {Coords,Entity,HazardEntity,ItemEntity,Item,Moveable} from './app';
+import {Enemy} from './Server';
 import {Command, CommandParser} from './Parser';
 import * as readline from 'readline';
 const io = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -15,18 +16,9 @@ import WebSocket from 'ws';
 //map.border (static value) will be saved client-side once on first connection
 //server calls player.setId(incremental value based on clients connected) upon first connection
 
-//connect to the server
-const connection = new WebSocket(`ws://localhost:8080`);
-
-//when receiving a message from the server
-//parser.prompt() when receive feedback from server after message sent
-connection.on('message', (data) => {
-  console.log(`${data}`)
-  /*io.question('> ', (answer) => {
-    connection.send(answer);
-  })*/
-  playerController.parser.prompt();
-});
+//client is the view
+//request for map data each update <- Entity[] (has a copy of updated map's Entity[]) using JSON.stringify() & JSON.parse()
+//send request for map editing <- string
 
 export class Player extends Entity implements Moveable {
   dead:boolean = false;
@@ -74,7 +66,7 @@ export class Player extends Entity implements Moveable {
             this.lastSeenHazard = entity.name;
 
             if(entity instanceof Enemy) {
-              enemy.fight();
+              enemy.fight(); //TD: playerController.sendCommand('fight'); --> run server's enemy.fight()
             }
             return false;
           }
@@ -90,7 +82,7 @@ export class Player extends Entity implements Moveable {
         if(player.getCoords().x == entity.getCoords().x && player.getCoords().y == entity.getCoords().y) {
           console.log('Taken ' + entity.name);
           this.inventory.push(<Item>{itemName:entity.itemName, usedOn:entity.usedOn});
-          map.removeEntity(entity);
+          map.removeEntity(entity); //TD: playerController.sendCommand('remove ' + entity.name); --> server's map.removeEntity
           return;
         }
       }
@@ -105,7 +97,7 @@ export class Player extends Entity implements Moveable {
           if(entity.name == inventoryItem.usedOn && inventoryItem.usedOn == this.lastSeenHazard) {
             console.log('Used ' + inventoryItem.itemName + ' on ' + inventoryItem.usedOn);
             this.removeItem(inventoryItem);
-            map.removeEntity(entity);
+            map.removeEntity(entity); //TD: playerController.sendCommand('remove ' + entity.name); --> server's map.removeEntity
             return;
           }
         }
@@ -169,11 +161,16 @@ class PlayerController {
     if(!enemy.dead) {
       enemy.chase(player);
     }
+    //update Map object
     return !this.gameEnded();
   }
 
   constructor() {
     this.parser = new CommandParser(this.handleInput, false);
+  }
+
+  sendCommand(message:string) {
+    //TD: msg to send to server's controller for server to determine which commands to run
   }
 
   /*start() {
@@ -184,3 +181,18 @@ class PlayerController {
 
 let player : Player = new Player(mapData.player);
 let playerController : PlayerController = new PlayerController();
+
+
+//connect to the server
+const connection = new WebSocket(`ws://localhost:8080`);
+
+//when receiving a message from the server
+//parser.prompt() when receive feedback from server after message sent
+connection.on('message', (data) => {
+  console.log(`${data}`)
+  //get Map object
+  /*io.question('> ', (answer) => {
+    connection.send(answer);
+  })*/
+  playerController.parser.prompt();
+});

@@ -15,31 +15,22 @@ let _: any = lodash;
 //receive player data thru string type cast into objects
 //set playerId when new player connects
 
-const PORT = 8080;
+//listener for commands that edit server's model
+//map is the model
+//update -> notify all clients when map state changes
+//could add Enemy into map.entities
 
-//The server initiates listening once instantiated
-const server = new WebSocket.Server({port: PORT});
-console.log(`Started new WebSocket server on ${PORT}`)
-
-//when receiving a connection from a client
-server.on('connection', (client) => {
-  console.log("Log: new connection!")
-  client.send('Input a command:');
-
-  //event handler for ALL messages (from that client)
-  client.on('message', (message: string) => {
-      console.log(`log: received ${message}`)
-      client.send(`You said: "${message}"`);
-  });
-});
+//game class is the controller
 
 class Map {
   private entities:Entity[] = [];
   readonly border:number;
   readonly exit:Coords;
+  readonly playerSpawn:Coords;
   constructor(mapData:MapData) {
     this.border = mapData.border;
     this.exit = mapData.exit;
+    this.playerSpawn = mapData.player;
     this.entities.push(new ItemEntity(mapData.key, 'key', 'door'));
     this.entities.push(new ItemEntity(mapData.potion, 'potion', 'acid'));
     this.entities.push(new ItemEntity(mapData.sword, 'sword', 'enemy'));
@@ -52,11 +43,16 @@ class Map {
     return this.entities;
   }
   removeEntity(entity:Entity) {
+    //TD: use string to get entity instead to avoid having to send entity object to server from client
     _.pull(this.entities, entity);
+  }
+
+  update() {
+
   }
 }
 
-class Enemy extends HazardEntity implements Moveable {
+export class Enemy extends HazardEntity implements Moveable {
   dead:boolean = false;
   constructor(coords:Coords) {
     super(coords, 'enemy');
@@ -104,30 +100,31 @@ class Enemy extends HazardEntity implements Moveable {
 //new logic to determine when enemy can move
 //enemyMove after one player moved?
 class Game {
-  //need to create new turn tracker for enemy movement
+  //TD: need to create new turn tracker for enemy movement
   handleTurn() {
     if(!enemy.dead) {
-    enemy.chase(player);
+    //enemy.chase(player);
     }
 
     this.showLocations();
   }
   
   //TD:
-  //notify player location to player client when player moves <-- can be processed client-side instead
+  //notify player location to player client when player moves <-- move to processed client-side instead
   //notify enemy location to all clients when enemy moves
-  showLocations() {
+  /*showLocations() {
     console.log('============================');
     console.log('Player Location: (x)' + player.getCoords().x + ' (y)' + player.getCoords().y);
     if(!enemy.dead) {
       console.log('Enemy Location: (x)' + enemy.getCoords().x + ' (y)' + enemy.getCoords().y);
     }
     console.log('============================');
-  }
+  }*/
   
+  //TD:
   //if player.dead -> stop calling parser.prompt()
   //if player won -> notify all clients & kill all players
-  gameEnded():boolean {
+  /*gameEnded():boolean {
     if(player.dead) {
       console.log('(Lost) You Died!');
       return true;
@@ -137,17 +134,35 @@ class Game {
       return true;
     }
     return false;
-  }
+  }*/
 
-  start() {
-    //load map data
+  constructor() {
+    //TD: load map data
   }
 }
 
+//TD:
 //move mapData, map, enemy into Game class
 let mapData : MapData = data;
 let map : Map = new Map(mapData);
 let enemy : Enemy = new Enemy(mapData.enemy);
 let gameInstance : Game = new Game();
 
-gameInstance.start();
+const PORT = 8080;
+
+//The server initiates listening once instantiated
+const server = new WebSocket.Server({port: PORT});
+console.log(`Started new WebSocket server on ${PORT}`)
+
+//when receiving a connection from a client
+server.on('connection', (client) => {
+  //if gameEnded, kill connecting player
+  console.log("Log: new connection!")
+  client.send('Input a command:');
+
+  //event handler for ALL messages (from that client)
+  client.on('message', (message: string) => {
+      console.log(`log: received ${message}`)
+      client.send(`You said: "${message}"`);
+  });
+});
