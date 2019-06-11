@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
 import {Coords,Entity,HazardEntity,ItemEntity,MapData,Moveable} from './app';
-//import {Player} from './Client';
+import {Player} from './Client';
 import data from './map.json';
 import * as lodash from 'lodash';
 let _: any = lodash;
@@ -47,11 +47,13 @@ export class Map {
   }
 
   updateClients() {
-    clientPlayer.send(JSON.stringify(this));
+    for(let client of clients) {
+      client.send(JSON.stringify(this));
+    }
   }
 }
 
-/*export class Enemy extends HazardEntity implements Moveable {
+export class Enemy extends HazardEntity implements Moveable {
   dead:boolean = false;
   constructor(coords:Coords) {
     super(coords, 'enemy');
@@ -94,7 +96,7 @@ export class Map {
       this.fight(target);
     }
   }
-}*/
+}
 
 //new logic to determine when enemy can move
 //enemyMove after one player moved?
@@ -141,7 +143,7 @@ class Game {
 }
 
 //TD:
-//move mapData, map, enemy into Game class
+//move mapData, map, enemy, clients into Game class
 let mapData : MapData = data;
 let map : Map = new Map(mapData);
 //let enemy : Enemy = new Enemy(mapData.enemy);
@@ -152,13 +154,13 @@ let PORT = 8080;
 //The server initiates listening once instantiated
 let server = new WebSocket.Server({port: PORT});
 console.log(`Started new WebSocket server on ${PORT}`)
-let clientPlayer : WebSocket;
+let clients : WebSocket[];
 
 //when receiving a connection from a client
 server.on('connection', (client:WebSocket) => {
   //if gameEnded, kill connecting player
   console.log("Log: new connection!")
-  clientPlayer = client;
+  clients.push(client);
   map.updateClients();
   client.send('Input a command:');
 

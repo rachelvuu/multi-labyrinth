@@ -1,5 +1,5 @@
 import {Coords,Entity,HazardEntity,ItemEntity,Item,Moveable} from './app';
-import {Map} from './Server';
+import {Map, Enemy} from './Server';
 import {Command, CommandParser} from './Parser';
 import * as readline from 'readline';
 const io = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -20,7 +20,7 @@ import WebSocket from 'ws';
 //request for map data each update <- Entity[] (has a copy of updated map's Entity[]) using JSON.stringify() & JSON.parse()
 //send request for map editing <- string
 
-/*export class Player extends Entity implements Moveable {
+export class Player extends Entity implements Moveable {
   dead:boolean = false;
   private lastSeenHazard: string = '';
   private inventory : Item[] = [];
@@ -83,7 +83,8 @@ import WebSocket from 'ws';
         if(player.getCoords().x == entity.getCoords().x && player.getCoords().y == entity.getCoords().y) {
           console.log('Taken ' + entity.name);
           this.inventory.push(<Item>{itemName:entity.itemName, usedOn:entity.usedOn});
-          map.removeEntity(entity); //TD: playerController.sendCommand('remove ' + entity.name); --> server's map.removeEntity
+          connection.send('remove ' + entity.name);
+          //map.removeEntity(entity); //TD: playerController.sendCommand('remove ' + entity.name); --> server's map.removeEntity
           return;
         }
       }
@@ -98,7 +99,8 @@ import WebSocket from 'ws';
           if(entity.name == inventoryItem.usedOn && inventoryItem.usedOn == this.lastSeenHazard) {
             console.log('Used ' + inventoryItem.itemName + ' on ' + inventoryItem.usedOn);
             this.removeItem(inventoryItem);
-            map.removeEntity(entity); //TD: playerController.sendCommand('remove ' + entity.name); --> server's map.removeEntity
+            connection.send('remove ' + entity.name);
+            //map.removeEntity(entity); //TD: playerController.sendCommand('remove ' + entity.name); --> server's map.removeEntity
             return;
           }
         }
@@ -140,7 +142,7 @@ import WebSocket from 'ws';
     }
     console.log('This area has nothing interesting.');
   }
-}*/
+}
 
 class PlayerController {
   parser:CommandParser;
@@ -168,8 +170,9 @@ class PlayerController {
     this.parser = new CommandParser(this.handleInput, false);
   }
 
-  update(map:Map) {
-
+  updateMap(data:string) {
+    map = <Map>JSON.parse(data);
+    console.log('Map Updated!');
   }
 }
 
@@ -178,6 +181,7 @@ const connection : WebSocket = new WebSocket(`ws://localhost:8080`);
 //TD: Sort things into classes for style
 let playerController : PlayerController = new PlayerController();
 let map : Map;
+let player : Player;
 playerController.parser.start();
 
 function isJson(item:any) {
@@ -199,8 +203,6 @@ function isJson(item:any) {
 connection.on('message', (data) => {
   console.log(`${data}`);
   if(isJson(`${data}`)) {
-    map = <Map>JSON.parse(`${data}`);
-    console.log('Map Updated!');
+    playerController.updateMap(`${data}`);
   }
 });
-//let player : Player = new Player(mapData.player);
