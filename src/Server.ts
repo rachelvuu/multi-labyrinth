@@ -146,7 +146,7 @@ class Game {
       //enemy.fight();
     } else if(message.includes('remove')) {
       let entityName = message.split(',');
-      map.removeEntity(entityName);
+      map.removeEntity(entityName[1]);
     }
   }
 }
