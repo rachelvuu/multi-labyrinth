@@ -12,7 +12,6 @@ let _: any = lodash;
 //don't need set/array of player since all player data is handled client-side
 
 //server class
-//receive player data thru string type cast into objects
 //set playerId when new player connects
 
 //listener for commands that edit server's model
