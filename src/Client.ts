@@ -149,7 +149,7 @@ class Player extends Entity implements Moveable {
 }
 
 class PlayerController {
-  handleInput(cmd:Command, arg:string) {
+  handleInput(cmd:Command, arg:string):boolean {
     console.log("Handling", cmd, "with argument '"+arg+"'");
     arg = arg.toLowerCase();
     if(cmd === Command.GO){
@@ -163,6 +163,10 @@ class PlayerController {
     } else if(cmd === Command.INVENTORY) {
       player.openInventory();
     }
+    if(!enemy.dead) {
+      enemy.chase(player);
+    }
+    return !this.gameEnded();
   }
 
   constructor() {
