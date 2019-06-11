@@ -21,13 +21,14 @@ const connection = new WebSocket(`ws://localhost:8080`);
 //when receiving a message from the server
 //parser.prompt() when receive feedback from server after message sent
 connection.on('message', (data) => {
-  console.log(`Received message: "${data}"`)
-  io.question('> ', (answer) => {
+  console.log(`${data}`)
+  /*io.question('> ', (answer) => {
     connection.send(answer);
-  })
+  })*/
+  playerController.parser.prompt();
 });
 
-class Player extends Entity implements Moveable {
+export class Player extends Entity implements Moveable {
   dead:boolean = false;
   private lastSeenHazard: string = '';
   private inventory : Item[] = [];
@@ -149,6 +150,8 @@ class Player extends Entity implements Moveable {
 }
 
 class PlayerController {
+  parser:CommandParser;
+
   handleInput(cmd:Command, arg:string):boolean {
     console.log("Handling", cmd, "with argument '"+arg+"'");
     arg = arg.toLowerCase();
@@ -170,14 +173,14 @@ class PlayerController {
   }
 
   constructor() {
-    //this.start() here instead
+    this.parser = new CommandParser(this.handleInput, false);
   }
 
-  start() {
+  /*start() {
     let parser = new CommandParser(this.handleInput, false);
     console.log('Input a command:');
-    parser.start();
-  }
+  }*/
 }
 
 let player : Player = new Player(mapData.player);
+let playerController : PlayerController = new PlayerController();

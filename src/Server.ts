@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
 import {Coords,Entity,HazardEntity,ItemEntity,MapData,Moveable} from './app';
-//import {Player} from './Client';
+import {Player} from './Client';
 import data from './map.json';
 import * as lodash from 'lodash';
 let _: any = lodash;
@@ -24,7 +24,7 @@ console.log(`Started new WebSocket server on ${PORT}`)
 //when receiving a connection from a client
 server.on('connection', (client) => {
   console.log("Log: new connection!")
-  client.send('Welcome to the server!');
+  client.send('Input a command:');
 
   //event handler for ALL messages (from that client)
   client.on('message', (message: string) => {
@@ -61,7 +61,7 @@ class Enemy extends HazardEntity implements Moveable {
   constructor(coords:Coords) {
     super(coords, 'enemy');
   }
-  chase(target:Entity) {
+  chase(target:Player) {
     if(this.getCoords().x > target.getCoords().x) {
       this.move('west');
     } else if(this.getCoords().x < target.getCoords().x) {
@@ -86,17 +86,17 @@ class Enemy extends HazardEntity implements Moveable {
     }
     this.coords = newCoords;
   }
-  fight() {
-    if(player.hasItem('sword')) {
+  fight(target:Player) {
+    if(target.hasItem('sword')) {
       console.log('You have killed the enemy.');
       this.dead = true;
     } else {
-      player.dead = true;
+      target.dead = true;
     }
   }
-  foundTarget(target:Entity) {
+  foundTarget(target:Player) {
     if(target.getCoords().x == this.getCoords().x && target.getCoords().y == this.getCoords().y) {
-      this.fight();
+      this.fight(target);
     }
   }
 }
