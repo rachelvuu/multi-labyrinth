@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
 import {Coords,Entity,HazardEntity,ItemEntity,MapData,Moveable} from './app';
-import {Player} from './Client';
+//import {Player} from './Client';
 import data from './map.json';
 import * as lodash from 'lodash';
 let _: any = lodash;
@@ -21,7 +21,7 @@ let _: any = lodash;
 
 //game class is the controller
 
-class Map {
+export class Map {
   private entities:Entity[] = [];
   readonly border:number;
   readonly exit:Coords;
@@ -46,12 +46,12 @@ class Map {
     _.pull(this.entities, entity);
   }
 
-  update() {
-
+  updateClients() {
+    clientPlayer.send(JSON.stringify(this));
   }
 }
 
-export class Enemy extends HazardEntity implements Moveable {
+/*export class Enemy extends HazardEntity implements Moveable {
   dead:boolean = false;
   constructor(coords:Coords) {
     super(coords, 'enemy');
@@ -94,18 +94,18 @@ export class Enemy extends HazardEntity implements Moveable {
       this.fight(target);
     }
   }
-}
+}*/
 
 //new logic to determine when enemy can move
 //enemyMove after one player moved?
 class Game {
   //TD: need to create new turn tracker for enemy movement
   handleTurn() {
-    if(!enemy.dead) {
+    //if(!enemy.dead) {
     //enemy.chase(player);
-    }
+    //}
 
-    this.showLocations();
+    //this.showLocations();
   }
   
   //TD:
@@ -144,24 +144,27 @@ class Game {
 //move mapData, map, enemy into Game class
 let mapData : MapData = data;
 let map : Map = new Map(mapData);
-let enemy : Enemy = new Enemy(mapData.enemy);
+//let enemy : Enemy = new Enemy(mapData.enemy);
 let gameInstance : Game = new Game();
 
-const PORT = 8080;
+let PORT = 8080;
 
 //The server initiates listening once instantiated
-const server = new WebSocket.Server({port: PORT});
+let server = new WebSocket.Server({port: PORT});
 console.log(`Started new WebSocket server on ${PORT}`)
+let clientPlayer : WebSocket;
 
 //when receiving a connection from a client
-server.on('connection', (client) => {
+server.on('connection', (client:WebSocket) => {
   //if gameEnded, kill connecting player
   console.log("Log: new connection!")
+  clientPlayer = client;
+  map.updateClients();
   client.send('Input a command:');
 
   //event handler for ALL messages (from that client)
   client.on('message', (message: string) => {
       console.log(`log: received ${message}`)
-      client.send(`You said: "${message}"`);
+      //client.send(`You said: "${message}"`);
   });
 });

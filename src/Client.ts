@@ -1,5 +1,5 @@
 import {Coords,Entity,HazardEntity,ItemEntity,Item,Moveable} from './app';
-import {Enemy} from './Server';
+import {Map} from './Server';
 import {Command, CommandParser} from './Parser';
 import * as readline from 'readline';
 const io = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -20,7 +20,7 @@ import WebSocket from 'ws';
 //request for map data each update <- Entity[] (has a copy of updated map's Entity[]) using JSON.stringify() & JSON.parse()
 //send request for map editing <- string
 
-export class Player extends Entity implements Moveable {
+/*export class Player extends Entity implements Moveable {
   dead:boolean = false;
   private lastSeenHazard: string = '';
   private inventory : Item[] = [];
@@ -66,7 +66,8 @@ export class Player extends Entity implements Moveable {
             this.lastSeenHazard = entity.name;
 
             if(entity instanceof Enemy) {
-              enemy.fight(); //TD: playerController.sendCommand('fight'); --> run server's enemy.fight()
+              connection.send('fight');
+              //enemy.fight();
             }
             return false;
           }
@@ -139,7 +140,7 @@ export class Player extends Entity implements Moveable {
     }
     console.log('This area has nothing interesting.');
   }
-}
+}*/
 
 class PlayerController {
   parser:CommandParser;
@@ -148,51 +149,58 @@ class PlayerController {
     console.log("Handling", cmd, "with argument '"+arg+"'");
     arg = arg.toLowerCase();
     if(cmd === Command.GO){
-      player.move(arg);
+      connection.send('GO');
+      //player.move(arg);
     } else if(cmd === Command.TAKE) {
-      player.take(arg);
+      //player.take(arg);
     } else if(cmd === Command.USE) {
-      player.use(arg);
+      //player.use(arg);
     } else if(cmd === Command.LOOK) {
-      player.look();
+      //player.look();
     } else if(cmd === Command.INVENTORY) {
-      player.openInventory();
-    }
-    if(!enemy.dead) {
-      enemy.chase(player);
+      //player.openInventory();
     }
     //update Map object
-    return !this.gameEnded();
+    return true;//!this.gameEnded();
   }
 
   constructor() {
     this.parser = new CommandParser(this.handleInput, false);
   }
 
-  sendCommand(message:string) {
-    //TD: msg to send to server's controller for server to determine which commands to run
-  }
+  update(map:Map) {
 
-  /*start() {
-    let parser = new CommandParser(this.handleInput, false);
-    console.log('Input a command:');
-  }*/
+  }
 }
 
-let player : Player = new Player(mapData.player);
+const connection : WebSocket = new WebSocket(`ws://localhost:8080`);
+
+//TD: Sort things into classes for style
 let playerController : PlayerController = new PlayerController();
+let map : Map;
+playerController.parser.start();
 
-
-//connect to the server
-const connection = new WebSocket(`ws://localhost:8080`);
+function isJson(item:any) {
+  item = typeof item !== "string"
+      ? JSON.stringify(item)
+      : item;
+  try {
+      item = JSON.parse(item);
+  } catch (e) {
+      return false;
+  }
+  if (typeof item === "object" && item !== null) {
+      return true;
+  }
+  return false;
+}
 
 //when receiving a message from the server
-//parser.prompt() when receive feedback from server after message sent
 connection.on('message', (data) => {
-  console.log(`${data}`)
-  //get Map object
-  /*io.question('> ', (answer) => {
-    connection.send(answer);
-  })*/
-  playerController.parser.prompt();
+  console.log(`${data}`);
+  if(isJson(`${data}`)) {
+    map = <Map>JSON.parse(`${data}`);
+    console.log('Map Updated!');
+  }
 });
+//let player : Player = new Player(mapData.player);
