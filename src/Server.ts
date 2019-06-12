@@ -21,6 +21,8 @@ let _: any = lodash;
 
 //game class is the controller
 
+//NEW: NEED TO SAVE PLAYER COORDS INTO AN ARRAY
+
 export class Map {
   private entities:Entity[] = [];
   readonly border:number;
@@ -53,6 +55,7 @@ export class Map {
   }
 }
 
+//TD: run foundtarget() when player coords is in same area
 export class Enemy extends HazardEntity implements Moveable {
   dead:boolean = false;
   constructor(coords:Coords) {

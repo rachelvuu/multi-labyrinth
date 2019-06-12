@@ -55,7 +55,7 @@ export class Player extends Entity implements Moveable {
     }*/
   }
 
-  /*checkAdvanceArea(coords:Coords):boolean {
+  checkAdvanceArea(coords:Coords):boolean {
     if(coords.x > map.border || coords.y > map.border|| coords.x < 0 || coords.y < 0) {
       console.log('You cannot pass the wall.');
       return false;
@@ -66,17 +66,17 @@ export class Player extends Entity implements Moveable {
             console.log(entity.name + ' is blocking the way.');
             this.lastSeenHazard = entity.name;
 
-            if(entity instanceof Enemy) {
+            //if(entity instanceof Enemy) {
               //connection.send('fight');
               //enemy.fight();
-            }
+            //}
             return false;
           }
         }
       }
     }
     return true;
-  }*/
+  }
 
   take(item:string) {
     for(let entity of map.getEntities()) {

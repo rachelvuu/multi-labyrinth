@@ -27,6 +27,7 @@ let _ = lodash;
 //update -> notify all clients when map state changes
 //could add Enemy into map.entities
 //game class is the controller
+//NEW: NEED TO SAVE PLAYER COORDS INTO AN ARRAY
 class Map {
     constructor(mapData) {
         this.entities = [];
@@ -54,6 +55,7 @@ class Map {
     }
 }
 exports.Map = Map;
+//TD: run foundtarget() when player coords is in same area
 class Enemy extends app_1.HazardEntity {
     constructor(coords) {
         super(coords, 'enemy');

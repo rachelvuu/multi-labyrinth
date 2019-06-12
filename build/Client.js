@@ -57,28 +57,28 @@ class Player extends app_1.Entity {
           this.look();
         }*/
     }
-    /*checkAdvanceArea(coords:Coords):boolean {
-      if(coords.x > map.border || coords.y > map.border|| coords.x < 0 || coords.y < 0) {
-        console.log('You cannot pass the wall.');
-        return false;
-      } else {
-        for(let entity of map.getEntities()) {
-          if(entity.getCoords().x == coords.x && entity.getCoords().y == coords.y) {
-            if(entity instanceof HazardEntity) {
-              console.log(entity.name + ' is blocking the way.');
-              this.lastSeenHazard = entity.name;
-  
-              if(entity instanceof Enemy) {
-                //connection.send('fight');
-                //enemy.fight();
-              }
-              return false;
-            }
-          }
+    checkAdvanceArea(coords) {
+        if (coords.x > map.border || coords.y > map.border || coords.x < 0 || coords.y < 0) {
+            console.log('You cannot pass the wall.');
+            return false;
         }
-      }
-      return true;
-    }*/
+        else {
+            for (let entity of map.getEntities()) {
+                if (entity.getCoords().x == coords.x && entity.getCoords().y == coords.y) {
+                    if (entity instanceof app_1.HazardEntity) {
+                        console.log(entity.name + ' is blocking the way.');
+                        this.lastSeenHazard = entity.name;
+                        //if(entity instanceof Enemy) {
+                        //connection.send('fight');
+                        //enemy.fight();
+                        //}
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
     take(item) {
         for (let entity of map.getEntities()) {
             if (entity instanceof app_1.ItemEntity && entity.name == item) {
