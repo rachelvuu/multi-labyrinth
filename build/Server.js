@@ -12,7 +12,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const ws_1 = __importDefault(require("ws"));
 const app_1 = require("./app");
-//import {Player} from './Client';
 const map_json_1 = __importDefault(require("./map.json"));
 const lodash = __importStar(require("lodash"));
 let _ = lodash;
@@ -44,59 +43,69 @@ class Map {
     getEntities() {
         return this.entities;
     }
-    removeEntity(entity) {
+    removeEntity(entityName) {
         //TD: use string to get entity instead to avoid having to send entity object to server from client
-        _.pull(this.entities, entity);
+        //_.pull(this.entities, entity);
     }
     updateClients() {
-        clientPlayer.send(JSON.stringify(this));
+        for (let client of clients) {
+            client.send(JSON.stringify(this));
+        }
     }
 }
 exports.Map = Map;
-/*export class Enemy extends HazardEntity implements Moveable {
-  dead:boolean = false;
-  constructor(coords:Coords) {
-    super(coords, 'enemy');
-  }
-  chase(target:Player) {
-    if(this.getCoords().x > target.getCoords().x) {
-      this.move('west');
-    } else if(this.getCoords().x < target.getCoords().x) {
-      this.move('east');
-    } else if(this.getCoords().y < target.getCoords().y) {
-      this.move('north');
-    } else if(this.getCoords().y > target.getCoords().y) {
-      this.move('south');
+class Enemy extends app_1.HazardEntity {
+    constructor(coords) {
+        super(coords, 'enemy');
+        this.dead = false;
     }
-    this.foundTarget(target);
-  }
-  move(direction:string) {
-    let newCoords : Coords = {x:this.coords.x, y:this.coords.y};
-    if(direction == 'north') {
-      newCoords.y++;
-    } else if(direction == 'south') {
-      newCoords.y--;
-    } else if(direction == 'west') {
-      newCoords.x--;
-    } else if(direction == 'east') {
-      newCoords.x++;
+    chase(target) {
+        if (this.getCoords().x > target.getCoords().x) {
+            this.move('west');
+        }
+        else if (this.getCoords().x < target.getCoords().x) {
+            this.move('east');
+        }
+        else if (this.getCoords().y < target.getCoords().y) {
+            this.move('north');
+        }
+        else if (this.getCoords().y > target.getCoords().y) {
+            this.move('south');
+        }
+        this.foundTarget(target);
     }
-    this.coords = newCoords;
-  }
-  fight(target:Player) {
-    if(target.hasItem('sword')) {
-      console.log('You have killed the enemy.');
-      this.dead = true;
-    } else {
-      target.dead = true;
+    move(direction) {
+        let newCoords = { x: this.coords.x, y: this.coords.y };
+        if (direction == 'north') {
+            newCoords.y++;
+        }
+        else if (direction == 'south') {
+            newCoords.y--;
+        }
+        else if (direction == 'west') {
+            newCoords.x--;
+        }
+        else if (direction == 'east') {
+            newCoords.x++;
+        }
+        this.coords = newCoords;
     }
-  }
-  foundTarget(target:Player) {
-    if(target.getCoords().x == this.getCoords().x && target.getCoords().y == this.getCoords().y) {
-      this.fight(target);
+    fight(target) {
+        if (target.hasItem('sword')) {
+            console.log('You have killed the enemy.');
+            this.dead = true;
+        }
+        else {
+            target.dead = true;
+        }
     }
-  }
-}*/
+    foundTarget(target) {
+        if (target.getCoords().x == this.getCoords().x && target.getCoords().y == this.getCoords().y) {
+            this.fight(target);
+        }
+    }
+}
+exports.Enemy = Enemy;
 //new logic to determine when enemy can move
 //enemyMove after one player moved?
 class Game {
@@ -135,28 +144,38 @@ class Game {
     constructor() {
         //TD: load map data
     }
+    control(message) {
+        if (message == 'fight') {
+            //enemy.fight();
+        }
+        else if (message.includes('remove')) {
+            let entityName = message.split(',');
+            map.removeEntity(entityName[1]);
+        }
+    }
 }
 //TD:
-//move mapData, map, enemy into Game class
+//move mapData, map, enemy, clients into Game class and others into classes for style
 let mapData = map_json_1.default;
 let map = new Map(mapData);
-//let enemy : Enemy = new Enemy(mapData.enemy);
+let enemy = new Enemy(mapData.enemy);
 let gameInstance = new Game();
 let PORT = 8080;
 //The server initiates listening once instantiated
 let server = new ws_1.default.Server({ port: PORT });
 console.log(`Started new WebSocket server on ${PORT}`);
-let clientPlayer;
+let clients = [];
 //when receiving a connection from a client
 server.on('connection', (client) => {
     //if gameEnded, kill connecting player
     console.log("Log: new connection!");
-    clientPlayer = client;
+    clients.push(client);
     map.updateClients();
     client.send('Input a command:');
     //event handler for ALL messages (from that client)
     client.on('message', (message) => {
-        console.log(`log: received ${message}`);
+        console.log(`RECEIVED COMMAND: ${message}`);
+        gameInstance.control(message);
         //client.send(`You said: "${message}"`);
     });
 });

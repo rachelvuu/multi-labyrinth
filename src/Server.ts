@@ -163,7 +163,7 @@ let PORT = 8080;
 //The server initiates listening once instantiated
 let server = new WebSocket.Server({port: PORT});
 console.log(`Started new WebSocket server on ${PORT}`)
-let clients : WebSocket[];
+let clients : WebSocket[] = [];
 
 //when receiving a connection from a client
 server.on('connection', (client:WebSocket) => {
