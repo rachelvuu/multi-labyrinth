@@ -49,9 +49,9 @@ class Map {
         //_.pull(this.entities, entity);
     }
     updateClients() {
-        /*for(let client of clients) {
-          client.send(JSON.stringify(this));
-        }*/
+        for (let client of clients) {
+            client.send(JSON.stringify(this));
+        }
     }
 }
 exports.Map = Map;
