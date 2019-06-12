@@ -1,5 +1,5 @@
 import {Coords,Entity,HazardEntity,ItemEntity,Item,Moveable} from './app';
-//import {Map, Enemy} from './Server';
+import {Map, Enemy} from './Server';
 import {Command, CommandParser} from './Parser';
 import * as readline from 'readline';
 //let io = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -67,7 +67,7 @@ export class Player extends Entity implements Moveable {
             this.lastSeenHazard = entity.name;
 
             if(entity instanceof Enemy) {
-              connection.send('fight');
+              //connection.send('fight');
               //enemy.fight();
             }
             return false;
@@ -78,7 +78,7 @@ export class Player extends Entity implements Moveable {
     return true;
   }*/
 
-  /*take(item:string) {
+  take(item:string) {
     for(let entity of map.getEntities()) {
       if(entity instanceof ItemEntity && entity.name == item) {
         if(player.getCoords().x == entity.getCoords().x && player.getCoords().y == entity.getCoords().y) {
@@ -108,7 +108,7 @@ export class Player extends Entity implements Moveable {
       }
     }
     console.log(item + ' is impossible to be used at the moment.');
-  }*/
+  }
 
   removeItem(item:Item) {
     _.pull(this.inventory, item);
@@ -134,7 +134,7 @@ export class Player extends Entity implements Moveable {
     return false;
   }
 
-  /*look() {
+  look() {
     for(let entity of map.getEntities()) {
       if(player.getCoords().x == entity.getCoords().x && player.getCoords().y == entity.getCoords().y) {
         console.log(entity.name + ' is in this area.');
@@ -142,7 +142,7 @@ export class Player extends Entity implements Moveable {
       }
     }
     console.log('This area has nothing interesting.');
-  }*/
+  }
 }
 
 class PlayerController {
@@ -155,11 +155,11 @@ class PlayerController {
       connection.send('GO');
       player.move(arg);
     } else if(cmd === Command.TAKE) {
-      //player.take(arg);
+      player.take(arg);
     } else if(cmd === Command.USE) {
-      //player.use(arg);
+      player.use(arg);
     } else if(cmd === Command.LOOK) {
-      //player.look();
+      player.look();
     } else if(cmd === Command.INVENTORY) {
       player.openInventory();
     }
@@ -172,8 +172,9 @@ class PlayerController {
   }
 
   updateMap(data:string) {
-    //map = <Map>JSON.parse(data);
+    map = <Map>JSON.parse(data);
     console.log('Map Updated!');
+    console.log(map.border);
   }
 }
 
@@ -181,7 +182,7 @@ const connection : WebSocket = new WebSocket(`ws://localhost:8080`);
 
 //TD: Sort things into classes for style
 let playerController : PlayerController = new PlayerController();
-//let map : Map;
+let map : Map;
 let player : Player;
 playerController.parser.start();
 

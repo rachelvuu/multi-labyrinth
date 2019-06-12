@@ -47,9 +47,9 @@ export class Map {
   }
 
   updateClients() {
-    for(let client of clients) {
+    /*for(let client of clients) {
       client.send(JSON.stringify(this));
-    }
+    }*/
   }
 }
 

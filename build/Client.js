@@ -11,7 +11,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = require("./app");
-//import {Map, Enemy} from './Server';
 const Parser_1 = require("./Parser");
 //let io = readline.createInterface({ input: process.stdin, output: process.stdout });
 const ws_1 = __importDefault(require("ws"));
@@ -70,7 +69,7 @@ class Player extends app_1.Entity {
               this.lastSeenHazard = entity.name;
   
               if(entity instanceof Enemy) {
-                connection.send('fight');
+                //connection.send('fight');
                 //enemy.fight();
               }
               return false;
@@ -80,37 +79,36 @@ class Player extends app_1.Entity {
       }
       return true;
     }*/
-    /*take(item:string) {
-      for(let entity of map.getEntities()) {
-        if(entity instanceof ItemEntity && entity.name == item) {
-          if(player.getCoords().x == entity.getCoords().x && player.getCoords().y == entity.getCoords().y) {
-            console.log('Taken ' + entity.name);
-            this.inventory.push(<Item>{itemName:entity.itemName, usedOn:entity.usedOn});
-            connection.send('remove,' + entity.name);
-            //map.removeEntity(entity); //TD: playerController.sendCommand('remove ' + entity.name); --> server's map.removeEntity
-            return;
-          }
-        }
-      }
-      console.log(item + ' is nowhere to be seen.');
-    }
-  
-    use(item:string) {
-      for(let inventoryItem of this.inventory) {
-        if(inventoryItem.itemName == item) {
-          for(let entity of map.getEntities()) {
-            if(entity.name == inventoryItem.usedOn && inventoryItem.usedOn == this.lastSeenHazard) {
-              console.log('Used ' + inventoryItem.itemName + ' on ' + inventoryItem.usedOn);
-              this.removeItem(inventoryItem);
-              connection.send('remove,' + entity.name);
-              //map.removeEntity(entity); //TD: playerController.sendCommand('remove ' + entity.name); --> server's map.removeEntity
-              return;
+    take(item) {
+        for (let entity of map.getEntities()) {
+            if (entity instanceof app_1.ItemEntity && entity.name == item) {
+                if (player.getCoords().x == entity.getCoords().x && player.getCoords().y == entity.getCoords().y) {
+                    console.log('Taken ' + entity.name);
+                    this.inventory.push({ itemName: entity.itemName, usedOn: entity.usedOn });
+                    connection.send('remove,' + entity.name);
+                    //map.removeEntity(entity); //TD: playerController.sendCommand('remove ' + entity.name); --> server's map.removeEntity
+                    return;
+                }
             }
-          }
         }
-      }
-      console.log(item + ' is impossible to be used at the moment.');
-    }*/
+        console.log(item + ' is nowhere to be seen.');
+    }
+    use(item) {
+        for (let inventoryItem of this.inventory) {
+            if (inventoryItem.itemName == item) {
+                for (let entity of map.getEntities()) {
+                    if (entity.name == inventoryItem.usedOn && inventoryItem.usedOn == this.lastSeenHazard) {
+                        console.log('Used ' + inventoryItem.itemName + ' on ' + inventoryItem.usedOn);
+                        this.removeItem(inventoryItem);
+                        connection.send('remove,' + entity.name);
+                        //map.removeEntity(entity); //TD: playerController.sendCommand('remove ' + entity.name); --> server's map.removeEntity
+                        return;
+                    }
+                }
+            }
+        }
+        console.log(item + ' is impossible to be used at the moment.');
+    }
     removeItem(item) {
         _.pull(this.inventory, item);
     }
@@ -133,6 +131,15 @@ class Player extends app_1.Entity {
         }
         return false;
     }
+    look() {
+        for (let entity of map.getEntities()) {
+            if (player.getCoords().x == entity.getCoords().x && player.getCoords().y == entity.getCoords().y) {
+                console.log(entity.name + ' is in this area.');
+                return;
+            }
+        }
+        console.log('This area has nothing interesting.');
+    }
 }
 exports.Player = Player;
 class PlayerController {
@@ -144,13 +151,13 @@ class PlayerController {
             player.move(arg);
         }
         else if (cmd === Parser_1.Command.TAKE) {
-            //player.take(arg);
+            player.take(arg);
         }
         else if (cmd === Parser_1.Command.USE) {
-            //player.use(arg);
+            player.use(arg);
         }
         else if (cmd === Parser_1.Command.LOOK) {
-            //player.look();
+            player.look();
         }
         else if (cmd === Parser_1.Command.INVENTORY) {
             player.openInventory();
@@ -162,14 +169,15 @@ class PlayerController {
         this.parser = new Parser_1.CommandParser(this.handleInput, false);
     }
     updateMap(data) {
-        //map = <Map>JSON.parse(data);
+        map = JSON.parse(data);
         console.log('Map Updated!');
+        console.log(map.border);
     }
 }
 const connection = new ws_1.default(`ws://localhost:8080`);
 //TD: Sort things into classes for style
 let playerController = new PlayerController();
-//let map : Map;
+let map;
 let player;
 playerController.parser.start();
 function isJson(item) {
