@@ -1,4 +1,7 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -6,21 +9,61 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-//for demoing user input
-const readline = __importStar(require("readline"));
-const io = readline.createInterface({ input: process.stdin, output: process.stdout });
+const Parser_1 = require("./Parser");
 const ws_1 = __importDefault(require("ws"));
-//connect to the server
+const lodash = __importStar(require("lodash"));
+let _ = lodash;
+class PlayerController {
+    constructor() {
+        this.playerActive = true;
+        this.playerActive = true;
+        this.parser = new Parser_1.CommandParser(this.handleInput, false);
+        this.parser.start();
+    }
+    handleInput(cmd, arg) {
+        console.log("Handling", cmd, "with argument '" + arg + "'");
+        arg = arg.toLowerCase();
+        if (this.playerActive == false) {
+            return false;
+        }
+        if (cmd === Parser_1.Command.GO) {
+            connection.send("go," + arg);
+        }
+        else if (cmd === Parser_1.Command.TAKE) {
+            connection.send("take," + arg);
+        }
+        else if (cmd === Parser_1.Command.USE) {
+            connection.send("use," + arg);
+        }
+        else if (cmd === Parser_1.Command.LOOK) {
+            connection.send("look");
+        }
+        else if (cmd === Parser_1.Command.INVENTORY) {
+            connection.send("inventory");
+        }
+        else if (cmd === Parser_1.Command.QUIT) {
+            return false;
+        }
+        return true;
+    }
+    interpretResponse(response) {
+        if (response == 'lose') {
+            this.playerActive = false;
+            console.log('You Lost!');
+        }
+        else if (response == 'win') {
+            this.playerActive = false;
+            console.log('Congrats, you won!');
+        }
+        else {
+            console.log(response);
+        }
+    }
+}
 const connection = new ws_1.default(`ws://localhost:8080`);
-//when receiving a message from the server
+let playerController = new PlayerController();
 connection.on('message', (data) => {
-    console.log(`Received message: "${data}"`);
-    io.question('> ', (answer) => {
-        connection.send(answer);
-    });
+    playerController.interpretResponse(`${data}`);
 });
 //# sourceMappingURL=Client.js.map

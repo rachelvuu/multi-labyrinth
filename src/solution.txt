@@ -1,0 +1,6 @@
+GO north
+TAKE treasure
+GO north
+GO north
+GO north
+GO north

@@ -19,10 +19,9 @@ var Command;
     Command["USE"] = "USE";
     Command["INVENTORY"] = "INVENTORY";
     Command["QUIT"] = "QUIT";
-    Command["DROP"] = "DROP";
 })(Command = exports.Command || (exports.Command = {}));
 //for easy listing/comparison
-const commands = [Command.GO, Command.LOOK, Command.TAKE, Command.USE, Command.INVENTORY, Command.QUIT, Command.DROP];
+const commands = [Command.GO, Command.LOOK, Command.TAKE, Command.USE, Command.INVENTORY, Command.QUIT];
 /**
  * A class for handling input commands for a basic adventure game.
  * Acts as a simple wrapper around Node's `readline` module.
@@ -34,7 +33,8 @@ class CommandParser {
      * The function should return whether or not the parser should prompt the user
      * for further input.
      */
-    constructor(handler) {
+    constructor(handler, continuous = true) {
+        this.continuous = continuous;
         this.handler = handler;
         this.io = readline.createInterface({
             input: process.stdin,
@@ -57,7 +57,8 @@ class CommandParser {
                 let arg = line.substr(firstSpace + 1);
                 let shouldProceed = this.handler(cmd, arg); //call handler function!
                 if (shouldProceed) {
-                    this.io.prompt();
+                    if (this.continuous)
+                        this.io.prompt(); //wait for user to call prompt again
                 }
                 else {
                     this.io.close();
@@ -65,7 +66,7 @@ class CommandParser {
             }
             else {
                 console.log('Invalid command. Commands are:', commands.join(', '));
-                this.io.prompt();
+                this.io.prompt(); //repeats
             }
         });
     }
@@ -76,6 +77,12 @@ class CommandParser {
         this.handler = handler;
     }
     /**
+     * Request new user input (for non-continuous parsing)
+     */
+    prompt() {
+        this.io.prompt();
+    }
+    /**
      * Begin requesting and parsing user input.
      */
     start() {
@@ -83,4 +90,4 @@ class CommandParser {
     }
 }
 exports.CommandParser = CommandParser;
-//# sourceMappingURL=ParserOld.js.map
+//# sourceMappingURL=Parser.js.map
