@@ -34,14 +34,15 @@ class Enemy extends HazardEntity implements Moveable {
   constructor(coords:Coords) {
     super(coords, 'enemy');
   }
-  chase(target:Player) {
-    if(this.getCoords().x > target.getCoords().x) {
+  randomMove() {
+    let rng = Math.floor(Math.random() * 4) + 1  ;
+    if(rng == 1) {
       this.move('west');
-    } else if(this.getCoords().x < target.getCoords().x) {
+    } else if(rng == 2) {
       this.move('east');
-    } else if(this.getCoords().y < target.getCoords().y) {
+    } else if(rng == 3) {
       this.move('north');
-    } else if(this.getCoords().y > target.getCoords().y) {
+    } else if(rng == 4) {
       this.move('south');
     }
     this.checkAreaPlayer();
@@ -114,6 +115,13 @@ class Player extends Entity implements Moveable {
     if(coords.x > map.border || coords.y > map.border|| coords.x < 0 || coords.y < 0) {
       this.client.send('You cannot pass the wall.');
       return false;
+    } else if(this.hasItem('treasure') && (this.getCoords().x == map.exit.x && this.getCoords().y == map.exit.y)) {
+      this.client.send('win');
+      for(let client of clients) {
+        if(this.client != client.socket) {
+          client.socket.send('lose');
+        }
+      }
     } else {
       for(let entity of map.getEntities()) {
         if(entity.getCoords().x == coords.x && entity.getCoords().y == coords.y) {
@@ -136,6 +144,11 @@ class Player extends Entity implements Moveable {
       if(entity instanceof ItemEntity && entity.name == item) {
         if(this.getCoords().x == entity.getCoords().x && this.getCoords().y == entity.getCoords().y) {
           this.client.send('Taken ' + entity.name);
+            for(let client of clients) {
+              if(this.client != client.socket) {
+                client.socket.send('Someone took the ' + entity.name + '!');
+              }
+            }
           this.inventory.push(<Item>{itemName:entity.itemName, usedOn:entity.usedOn});
           map.removeEntity(entity);
           return;

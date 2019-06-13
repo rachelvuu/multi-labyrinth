@@ -41,17 +41,18 @@ class Enemy extends app_1.HazardEntity {
         super(coords, 'enemy');
         this.dead = false;
     }
-    chase(target) {
-        if (this.getCoords().x > target.getCoords().x) {
+    randomMove() {
+        let rng = Math.floor(Math.random() * 4) + 1;
+        if (rng == 1) {
             this.move('west');
         }
-        else if (this.getCoords().x < target.getCoords().x) {
+        else if (rng == 2) {
             this.move('east');
         }
-        else if (this.getCoords().y < target.getCoords().y) {
+        else if (rng == 3) {
             this.move('north');
         }
-        else if (this.getCoords().y > target.getCoords().y) {
+        else if (rng == 4) {
             this.move('south');
         }
         this.checkAreaPlayer();
