@@ -15,19 +15,6 @@ const app_1 = require("./app");
 const map_json_1 = __importDefault(require("./map.json"));
 const lodash = __importStar(require("lodash"));
 let _ = lodash;
-//server has one map data instance
-//includes --> hazard/item/enemy data
-//--> enemy logic
-//--> game win/lose logic
-//don't need set/array of player since all player data is handled client-side
-//server class
-//set playerId when new player connects
-//listener for commands that edit server's model
-//map is the model
-//update -> notify all clients when map state changes
-//could add Enemy into map.entities
-//game class is the controller
-//NEW: NEED TO SAVE PLAYER COORDS INTO AN ARRAY
 class Map {
     constructor(mapData) {
         this.entities = [];
@@ -40,22 +27,15 @@ class Map {
         this.entities.push(new app_1.ItemEntity(mapData.treasure, 'treasure', 'exit'));
         this.entities.push(new app_1.HazardEntity(mapData.acid, 'acid'));
         this.entities.push(new app_1.HazardEntity(mapData.door, 'door'));
+        this.entities.push(new Enemy(mapData.enemy));
     }
     getEntities() {
         return this.entities;
     }
-    removeEntity(entityName) {
-        //TD: use string to get entity instead to avoid having to send entity object to server from client
-        //_.pull(this.entities, entity);
-    }
-    updateClients() {
-        for (let client of clients) {
-            client.send(JSON.stringify(this));
-        }
+    removeEntity(entity) {
+        _.pull(this.entities, entity);
     }
 }
-exports.Map = Map;
-//TD: run foundtarget() when player coords is in same area
 class Enemy extends app_1.HazardEntity {
     constructor(coords) {
         super(coords, 'enemy');
@@ -74,7 +54,7 @@ class Enemy extends app_1.HazardEntity {
         else if (this.getCoords().y > target.getCoords().y) {
             this.move('south');
         }
-        this.foundTarget(target);
+        this.checkAreaPlayer();
     }
     move(direction) {
         let newCoords = { x: this.coords.x, y: this.coords.y };
@@ -90,95 +70,180 @@ class Enemy extends app_1.HazardEntity {
         else if (direction == 'east') {
             newCoords.x++;
         }
+        for (let client of clients) {
+            client.socket.send('Enemy Location: (x)' + this.getCoords().x + ' (y)' + this.getCoords().y);
+        }
         this.coords = newCoords;
     }
     fight(target) {
         if (target.hasItem('sword')) {
-            console.log('You have killed the enemy.');
+            target.client.send('You have killed the enemy.');
             this.dead = true;
         }
         else {
+            target.client.send('lose');
             target.dead = true;
         }
     }
-    foundTarget(target) {
-        if (target.getCoords().x == this.getCoords().x && target.getCoords().y == this.getCoords().y) {
-            this.fight(target);
+    checkAreaPlayer() {
+        for (let client of clients) {
+            if (client.player.getCoords().x == this.getCoords().x && client.player.getCoords().y == this.getCoords().y) {
+                this.fight(client.player);
+            }
         }
     }
 }
-exports.Enemy = Enemy;
-//new logic to determine when enemy can move
-//enemyMove after one player moved?
-class Game {
-    //TD: need to create new turn tracker for enemy movement
-    handleTurn() {
-        //if(!enemy.dead) {
-        //enemy.chase(player);
-        //}
-        //this.showLocations();
+class Player extends app_1.Entity {
+    constructor(coords, socket) {
+        super(coords, 'player');
+        this.dead = false;
+        this.lastSeenHazard = '';
+        this.inventory = [];
+        this.client = socket;
     }
-    //TD:
-    //notify player location to player client when player moves <-- move to processed client-side instead
-    //notify enemy location to all clients when enemy moves
-    /*showLocations() {
-      console.log('============================');
-      console.log('Player Location: (x)' + player.getCoords().x + ' (y)' + player.getCoords().y);
-      if(!enemy.dead) {
-        console.log('Enemy Location: (x)' + enemy.getCoords().x + ' (y)' + enemy.getCoords().y);
-      }
-      console.log('============================');
-    }*/
-    //TD:
-    //if player.dead -> stop calling parser.prompt()
-    //if player won -> notify all clients & kill all players
-    /*gameEnded():boolean {
-      if(player.dead) {
-        console.log('(Lost) You Died!');
-        return true;
-      }
-      if(player.getCoords().x == map.exit.x && player.getCoords().y == map.exit.y && player.hasItem('treasure')) {
-        console.log('(Win) Congrats, you escaped!');
-        return true;
-      }
-      return false;
-    }*/
-    constructor() {
-        //TD: load map data
-    }
-    control(message) {
-        if (message == 'fight') {
-            //enemy.fight();
+    move(direction) {
+        let newCoords = { x: this.coords.x, y: this.coords.y };
+        if (direction == 'north') {
+            newCoords.y++;
         }
-        else if (message.includes('remove')) {
-            let entityName = message.split(',');
-            map.removeEntity(entityName[1]);
+        else if (direction == 'south') {
+            newCoords.y--;
+        }
+        else if (direction == 'west') {
+            newCoords.x--;
+        }
+        else if (direction == 'east') {
+            newCoords.x++;
+        }
+        if (this.checkAdvanceArea(newCoords)) {
+            this.lastSeenHazard = '';
+            this.coords = newCoords;
+            this.look();
+        }
+    }
+    checkAdvanceArea(coords) {
+        if (coords.x > map.border || coords.y > map.border || coords.x < 0 || coords.y < 0) {
+            this.client.send('You cannot pass the wall.');
+            return false;
+        }
+        else {
+            for (let entity of map.getEntities()) {
+                if (entity.getCoords().x == coords.x && entity.getCoords().y == coords.y) {
+                    if (entity instanceof app_1.HazardEntity) {
+                        this.client.send(entity.name + ' is blocking the way.');
+                        this.lastSeenHazard = entity.name;
+                        if (entity instanceof Enemy) {
+                            entity.fight(this);
+                        }
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    take(item) {
+        for (let entity of map.getEntities()) {
+            if (entity instanceof app_1.ItemEntity && entity.name == item) {
+                if (this.getCoords().x == entity.getCoords().x && this.getCoords().y == entity.getCoords().y) {
+                    this.client.send('Taken ' + entity.name);
+                    this.inventory.push({ itemName: entity.itemName, usedOn: entity.usedOn });
+                    map.removeEntity(entity);
+                    return;
+                }
+            }
+        }
+        this.client.send(item + ' is nowhere to be seen.');
+    }
+    use(item) {
+        for (let inventoryItem of this.inventory) {
+            if (inventoryItem.itemName == item) {
+                for (let entity of map.getEntities()) {
+                    if (entity.name == inventoryItem.usedOn && inventoryItem.usedOn == this.lastSeenHazard) {
+                        this.client.send('Used ' + inventoryItem.itemName + ' on ' + inventoryItem.usedOn);
+                        this.removeItem(inventoryItem);
+                        map.removeEntity(entity);
+                        return;
+                    }
+                }
+            }
+        }
+        this.client.send(item + ' is impossible to be used at the moment.');
+    }
+    removeItem(item) {
+        _.pull(this.inventory, item);
+    }
+    openInventory() {
+        if (this.inventory.length == 0) {
+            this.client.send('Inventory is empty.');
+        }
+        else {
+            this.client.send('Inventory: ');
+            for (let item of this.inventory) {
+                this.client.send(item.itemName + ' ');
+            }
+        }
+    }
+    hasItem(item) {
+        for (let inventoryItem of this.inventory) {
+            if (inventoryItem.itemName == item) {
+                return true;
+            }
+        }
+        return false;
+    }
+    look() {
+        this.client.send('Your Location: (x)' + this.getCoords().x + ' (y)' + this.getCoords().y);
+        for (let entity of map.getEntities()) {
+            if (this.getCoords().x == entity.getCoords().x && this.getCoords().y == entity.getCoords().y) {
+                this.client.send(entity.name + ' is in this area.');
+                return;
+            }
+        }
+        this.client.send('This area has nothing interesting.');
+    }
+}
+class PlayerClient {
+    constructor(socket) {
+        this.socket = socket;
+        this.player = new Player(map.playerSpawn, socket);
+    }
+    interpretRequest(message) {
+        if (message.includes(',')) {
+            let cmd = message.split(',')[0];
+            let arg = message.split(',')[1];
+            if (cmd == 'go') {
+                this.player.move(arg);
+            }
+            else if (cmd == 'take') {
+                this.player.take(arg);
+            }
+            else if (cmd == 'use') {
+                this.player.use(arg);
+            }
+        }
+        else if (message.includes('look')) {
+            this.player.look();
+        }
+        else if (message.includes('inventory')) {
+            this.player.openInventory();
         }
     }
 }
-//TD:
-//move mapData, map, enemy, clients into Game class and others into classes for style
 let mapData = map_json_1.default;
 let map = new Map(mapData);
-let enemy = new Enemy(mapData.enemy);
-let gameInstance = new Game();
 let PORT = 8080;
-//The server initiates listening once instantiated
 let server = new ws_1.default.Server({ port: PORT });
 console.log(`Started new WebSocket server on ${PORT}`);
 let clients = [];
-//when receiving a connection from a client
 server.on('connection', (client) => {
-    //if gameEnded, kill connecting player
     console.log("Log: new connection!");
-    clients.push(client);
-    map.updateClients();
+    let playerClient = new PlayerClient(client);
+    clients.push(playerClient);
     client.send('Input a command:');
-    //event handler for ALL messages (from that client)
     client.on('message', (message) => {
         console.log(`RECEIVED COMMAND: ${message}`);
-        gameInstance.control(message);
-        //client.send(`You said: "${message}"`);
+        playerClient.interpretRequest(message);
     });
 });
 //# sourceMappingURL=Server.js.map

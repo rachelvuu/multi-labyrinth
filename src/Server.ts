@@ -1,29 +1,10 @@
 import WebSocket from 'ws';
-import {Coords,Entity,HazardEntity,ItemEntity,MapData,Moveable} from './app';
-import {Player} from './Client';
+import {Coords,Entity,HazardEntity,ItemEntity,MapData,Moveable, Item} from './app';
 import data from './map.json';
 import * as lodash from 'lodash';
 let _: any = lodash;
 
-//server has one map data instance
-//includes --> hazard/item/enemy data
-//--> enemy logic
-//--> game win/lose logic
-//don't need set/array of player since all player data is handled client-side
-
-//server class
-//set playerId when new player connects
-
-//listener for commands that edit server's model
-//map is the model
-//update -> notify all clients when map state changes
-//could add Enemy into map.entities
-
-//game class is the controller
-
-//NEW: NEED TO SAVE PLAYER COORDS INTO AN ARRAY
-
-export class Map {
+class Map {
   private entities:Entity[] = [];
   readonly border:number;
   readonly exit:Coords;
@@ -38,25 +19,17 @@ export class Map {
     this.entities.push(new ItemEntity(mapData.treasure, 'treasure', 'exit'));
     this.entities.push(new HazardEntity(mapData.acid, 'acid'));
     this.entities.push(new HazardEntity(mapData.door, 'door'));
+    this.entities.push(new Enemy(mapData.enemy));
   }
-
   getEntities():Entity[] {
     return this.entities;
   }
-  removeEntity(entityName:string) {
-    //TD: use string to get entity instead to avoid having to send entity object to server from client
-    //_.pull(this.entities, entity);
-  }
-
-  updateClients() {
-    for(let client of clients) {
-      client.send(JSON.stringify(this));
-    }
+  removeEntity(entity:Entity) {
+    _.pull(this.entities, entity);
   }
 }
 
-//TD: run foundtarget() when player coords is in same area
-export class Enemy extends HazardEntity implements Moveable {
+class Enemy extends HazardEntity implements Moveable {
   dead:boolean = false;
   constructor(coords:Coords) {
     super(coords, 'enemy');
@@ -71,7 +44,7 @@ export class Enemy extends HazardEntity implements Moveable {
     } else if(this.getCoords().y > target.getCoords().y) {
       this.move('south');
     }
-    this.foundTarget(target);
+    this.checkAreaPlayer();
   }
   move(direction:string) {
     let newCoords : Coords = {x:this.coords.x, y:this.coords.y};
@@ -84,102 +57,189 @@ export class Enemy extends HazardEntity implements Moveable {
     } else if(direction == 'east') {
       newCoords.x++;
     }
+    for(let client of clients) {
+      client.socket.send('Enemy Location: (x)' + this.getCoords().x + ' (y)' + this.getCoords().y);
+    }
     this.coords = newCoords;
   }
   fight(target:Player) {
     if(target.hasItem('sword')) {
-      console.log('You have killed the enemy.');
+      target.client.send('You have killed the enemy.');
       this.dead = true;
     } else {
+      target.client.send('lose');
       target.dead = true;
     }
   }
-  foundTarget(target:Player) {
-    if(target.getCoords().x == this.getCoords().x && target.getCoords().y == this.getCoords().y) {
-      this.fight(target);
+  checkAreaPlayer() {
+    for(let client of clients) {
+      if(client.player.getCoords().x == this.getCoords().x && client.player.getCoords().y == this.getCoords().y) {
+        this.fight(client.player);
+      }
     }
   }
 }
 
-//new logic to determine when enemy can move
-//enemyMove after one player moved?
-class Game {
-  //TD: need to create new turn tracker for enemy movement
-  handleTurn() {
-    //if(!enemy.dead) {
-    //enemy.chase(player);
-    //}
+class Player extends Entity implements Moveable {
+  dead:boolean = false;
+  client:WebSocket;
+  private lastSeenHazard: string = '';
+  private inventory : Item[] = [];
 
-    //this.showLocations();
+  constructor(coords:Coords, socket:WebSocket) {
+    super(coords, 'player');
+    this.client = socket;
   }
-  
-  //TD:
-  //notify player location to player client when player moves <-- move to processed client-side instead
-  //notify enemy location to all clients when enemy moves
-  /*showLocations() {
-    console.log('============================');
-    console.log('Player Location: (x)' + player.getCoords().x + ' (y)' + player.getCoords().y);
-    if(!enemy.dead) {
-      console.log('Enemy Location: (x)' + enemy.getCoords().x + ' (y)' + enemy.getCoords().y);
+
+  move(direction:string) {
+    let newCoords : Coords = {x:this.coords.x, y:this.coords.y};
+    if(direction == 'north') {
+      newCoords.y++;
+    } else if(direction == 'south') {
+      newCoords.y--;
+    } else if(direction == 'west') {
+      newCoords.x--;
+    } else if(direction == 'east') {
+      newCoords.x++;
     }
-    console.log('============================');
-  }*/
-  
-  //TD:
-  //if player.dead -> stop calling parser.prompt()
-  //if player won -> notify all clients & kill all players
-  /*gameEnded():boolean {
-    if(player.dead) {
-      console.log('(Lost) You Died!');
-      return true;
+
+    if(this.checkAdvanceArea(newCoords)) {
+      this.lastSeenHazard = '';
+      this.coords = newCoords;
+      this.look();
     }
-    if(player.getCoords().x == map.exit.x && player.getCoords().y == map.exit.y && player.hasItem('treasure')) {
-      console.log('(Win) Congrats, you escaped!');
-      return true;
+  }
+
+  checkAdvanceArea(coords:Coords):boolean {
+    if(coords.x > map.border || coords.y > map.border|| coords.x < 0 || coords.y < 0) {
+      this.client.send('You cannot pass the wall.');
+      return false;
+    } else {
+      for(let entity of map.getEntities()) {
+        if(entity.getCoords().x == coords.x && entity.getCoords().y == coords.y) {
+          if(entity instanceof HazardEntity) {
+            this.client.send(entity.name + ' is blocking the way.');
+            this.lastSeenHazard = entity.name;
+            if(entity instanceof Enemy) {
+              entity.fight(this);
+            }
+            return false;
+          }
+        }
+      }
+    }
+    return true;
+  }
+
+  take(item:string) {
+    for(let entity of map.getEntities()) {
+      if(entity instanceof ItemEntity && entity.name == item) {
+        if(this.getCoords().x == entity.getCoords().x && this.getCoords().y == entity.getCoords().y) {
+          this.client.send('Taken ' + entity.name);
+          this.inventory.push(<Item>{itemName:entity.itemName, usedOn:entity.usedOn});
+          map.removeEntity(entity);
+          return;
+        }
+      }
+    }
+    this.client.send(item + ' is nowhere to be seen.');
+  }
+
+  use(item:string) {
+    for(let inventoryItem of this.inventory) {
+      if(inventoryItem.itemName == item) {
+        for(let entity of map.getEntities()) {
+          if(entity.name == inventoryItem.usedOn && inventoryItem.usedOn == this.lastSeenHazard) {
+            this.client.send('Used ' + inventoryItem.itemName + ' on ' + inventoryItem.usedOn);
+            this.removeItem(inventoryItem);
+            map.removeEntity(entity);
+            return;
+          }
+        }
+      }
+    }
+    this.client.send(item + ' is impossible to be used at the moment.');
+  }
+
+  removeItem(item:Item) {
+    _.pull(this.inventory, item);
+  }
+
+  openInventory() {
+    if(this.inventory.length == 0) {
+      this.client.send('Inventory is empty.');
+    } else {
+      this.client.send('Inventory: ');
+      for(let item of this.inventory) {
+        this.client.send(item.itemName + ' ');
+      }
+    }
+  }
+
+  hasItem(item:string):boolean {
+    for(let inventoryItem of this.inventory) {
+      if(inventoryItem.itemName == item) {
+        return true;
+      }
     }
     return false;
-  }*/
-
-  constructor() {
-    //TD: load map data
   }
 
-  control(message:string) {
-    if(message == 'fight') {
-      //enemy.fight();
-    } else if(message.includes('remove')) {
-      let entityName = message.split(',');
-      map.removeEntity(entityName[1]);
+  look() {
+    this.client.send('Your Location: (x)' + this.getCoords().x + ' (y)' + this.getCoords().y);
+    for(let entity of map.getEntities()) {
+      if(this.getCoords().x == entity.getCoords().x && this.getCoords().y == entity.getCoords().y) {
+        this.client.send(entity.name + ' is in this area.');
+        return;
+      }
+    }
+    this.client.send('This area has nothing interesting.');
+  }
+}
+
+class PlayerClient {
+  socket:WebSocket;
+  player:Player;
+  constructor(socket:WebSocket) {
+    this.socket = socket;
+    this.player = new Player(map.playerSpawn, socket);
+  }
+  interpretRequest(message:string) {
+    if(message.includes(',')) {
+      let cmd = message.split(',')[0];
+      let arg = message.split(',')[1];
+      if(cmd == 'go') {
+        this.player.move(arg);
+      } else if(cmd == 'take') {
+        this.player.take(arg);
+      } else if(cmd == 'use') {
+        this.player.use(arg);
+      }
+    } else if(message.includes('look')) {
+      this.player.look();
+    } else if(message.includes('inventory')){
+      this.player.openInventory();
     }
   }
 }
 
-//TD:
-//move mapData, map, enemy, clients into Game class and others into classes for style
 let mapData : MapData = data;
 let map : Map = new Map(mapData);
-let enemy : Enemy = new Enemy(mapData.enemy);
-let gameInstance : Game = new Game();
 
 let PORT = 8080;
-
-//The server initiates listening once instantiated
 let server = new WebSocket.Server({port: PORT});
-console.log(`Started new WebSocket server on ${PORT}`)
-let clients : WebSocket[] = [];
+console.log(`Started new WebSocket server on ${PORT}`);
 
-//when receiving a connection from a client
+let clients : PlayerClient[] = [];
+
 server.on('connection', (client:WebSocket) => {
-  //if gameEnded, kill connecting player
   console.log("Log: new connection!")
-  clients.push(client);
-  map.updateClients();
+  let playerClient = new PlayerClient(client);
+  clients.push(playerClient);
   client.send('Input a command:');
 
-  //event handler for ALL messages (from that client)
   client.on('message', (message:string) => {
-      console.log(`RECEIVED COMMAND: ${message}`)
-      gameInstance.control(message);
-      //client.send(`You said: "${message}"`);
+      console.log(`RECEIVED COMMAND: ${message}`);
+      playerClient.interpretRequest(message);
   });
 });
